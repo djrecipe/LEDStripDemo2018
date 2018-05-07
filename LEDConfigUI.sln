@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LEDConfigUI", "LEDConfigUI\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LEDConfig", "LEDConfig\LEDConfig.csproj", "{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LEDConfigTests", "LEDConfigTests\LEDConfigTests.csproj", "{39DC5348-B7EA-4F31-8431-34D0A9D0B191}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39DC5348-B7EA-4F31-8431-34D0A9D0B191}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39DC5348-B7EA-4F31-8431-34D0A9D0B191}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39DC5348-B7EA-4F31-8431-34D0A9D0B191}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39DC5348-B7EA-4F31-8431-34D0A9D0B191}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
