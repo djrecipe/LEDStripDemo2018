@@ -85,7 +85,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArduinoNano.cs" />
+    <Compile Include="Arduino\ArduinoNano.cs" />
+    <Compile Include="LEDs\LEDStrip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
