@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LEDConfigUI", "LEDConfigUI\LEDConfigUI.csproj", "{F628B863-DB17-48A0-BF5A-5E3276CC6B3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LEDConfig", "LEDConfig\LEDConfig.csproj", "{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F628B863-DB17-48A0-BF5A-5E3276CC6B3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F628B863-DB17-48A0-BF5A-5E3276CC6B3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F628B863-DB17-48A0-BF5A-5E3276CC6B3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F628B863-DB17-48A0-BF5A-5E3276CC6B3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06DB7B01-B8F4-4F8E-8B7F-A2B2B83169D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B619751A-8AD7-449E-93A3-180B46DD4CD8}
+	EndGlobalSection
+EndGlobal
