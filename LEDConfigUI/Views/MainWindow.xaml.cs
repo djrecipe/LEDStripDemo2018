@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using AbaciLabs.LEDConfig.UI.Models;
 
 namespace AbaciLabs.LEDConfig.UI.Views
 {
@@ -20,9 +21,13 @@ namespace AbaciLabs.LEDConfig.UI.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        public MainWindowModel Model { get; private set; } = new MainWindowModel();
+
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = Model;
+            return;
         }
     }
 }
