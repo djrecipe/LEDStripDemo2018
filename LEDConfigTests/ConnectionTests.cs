@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using AbaciLabs.LEDConfig.Arduino;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LEDConfig.Tests
@@ -15,6 +17,17 @@ namespace LEDConfig.Tests
         [TestMethod, TestCategory("Hardware")]
         public void ConnectArduino()
         {
+        }
+        
+        /// <summary>
+        /// Test discovery of a live Arduino device
+        /// </summary>
+        [TestMethod, TestCategory("Hardware")]
+        public void DiscoverArduino()
+        {
+            ArduinoNanoFactory factory = new ArduinoNanoFactory();
+            Task<ArduinoNano> arduino = factory.Search();
+            return;
         }
     }
 }

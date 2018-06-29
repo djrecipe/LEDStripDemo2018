@@ -16,40 +16,19 @@ namespace AbaciLabs.LEDConfig.Arduino
         private readonly SerialPort serialPort = new SerialPort();
         #endregion
         #region Instance Properties
-        private string _PortName = "COM1";
-        /// <summary>
-        /// Serial port name
-        /// </summary>
-        public string PortName
-        {
-            get { return this._PortName; }
-            set
-            {
-                if(string.IsNullOrWhiteSpace(value) || value.StartsWith(@"\"))
-                    throw new ArgumentException("Invalid port name");
-                this._PortName = value;
-                this.UpdateSerialPort();
-                return;
-            }
-        }
         #endregion
         #region Instance Methods
         /// <summary>
-        /// Connect to the serial port
+        /// Instantiate a new Arduino device using the specified serial port
         /// </summary>
-        public void Connect()
+        /// <param name="port">Device serial port</param>
+        public ArduinoNano(SerialPort port)
         {
-            if(!this.serialPort.IsOpen)
-                this.serialPort.Open();
-            return;
-        }
-        /// <summary>
-        /// Disconnect from the serial port
-        /// </summary>
-        public void Disconnect()
-        {
-            if(this.serialPort.IsOpen)
-                this.serialPort.Close();
+            if(port == null)
+                throw new ArgumentNullException("NULL serial port");
+            if(!port.IsOpen)
+                throw new ArgumentException("Port is not open");
+            this.serialPort = port;
             return;
         }
         /// <summary>
@@ -57,14 +36,9 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// </summary>
         public void Dispose()
         {
-            this.Disconnect();
-            this.serialPort?.Dispose();
-            return;
-        }
-        private void UpdateSerialPort()
-        {
-            this.Disconnect();
-            this.serialPort.PortName = this.PortName;
+            if(this.serialPort.IsOpen)
+                this.serialPort.Close();
+            this.serialPort.Dispose();
             return;
         }
         #endregion
