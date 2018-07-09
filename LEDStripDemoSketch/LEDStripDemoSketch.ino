@@ -11,7 +11,9 @@ enum ActionTypes {
   Unknown,
   Rainbow,
   RainbowCycle,
-  TheaterRainbowCycle 
+  TheaterRainbowCycle,
+  Manual,
+  Discovery
 };
 
 // Number of RGB LEDs in strand
@@ -20,6 +22,7 @@ int countLEDs = 32;
 LPD8806 strip = LPD8806(countLEDs);
 // Current action type
 ActionTypes currentActionType = Unknown;
+ActionTypes lastActionType = Unknown;
 int currentDelay = 10;
 // Current serial input string
 String inputString = "";
@@ -88,8 +91,14 @@ void loop()
     case TheaterRainbowCycle:
       LightTheaterRainbowCycle(currentDelay);
       break;   
+    case Manual:
+      LightFill(strip.Color(0,   0,   0), currentDelay);
+      break;
     case Unknown:
       LightFill(strip.Color(0,   0,   0), currentDelay);
+      break;
+    case Discovery:
+      SendDiscoveryResponse();
       break;
       
   }
@@ -277,6 +286,7 @@ void ReadCommand()
   temp_str = input_string.substring(old_semicolon_index, semicolon_index);
   ActionTypes action_type = CommandStringToActionType(temp_str);
   Serial.println("> Action Type: "+ActionTypeToString(action_type));
+  lastActionType = currentActionType;
   currentActionType = action_type;
   // parse delay
   old_semicolon_index = semicolon_index;
@@ -333,10 +343,21 @@ void ReadSettings()
   return;
 }
 
+void SendDiscoveryResponse()
+{
+  Serial.println("BM2018");
+  currentActionType = lastActionType;
+  return;
+}
+
 String ActionTypeToString(ActionTypes action_type)
 {
   switch(action_type)
   {
+    case Discovery:
+      return "Discovery";
+    case Manual:
+      return "Manual";
     case Rainbow:
       return "Basic Rainbow";
     case RainbowCycle:
@@ -359,6 +380,10 @@ ActionTypes CommandStringToActionType(String text)
       return RainbowCycle;
   if (text == "t")
       return TheaterRainbowCycle;
+  if (text == "m")
+      return Manual;
+  if (text == "ID")
+      return Discovery;
   return Unknown;
 }
 

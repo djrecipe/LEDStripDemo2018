@@ -27,6 +27,7 @@ namespace LEDConfig.Tests
         {
             ArduinoNanoFactory factory = new ArduinoNanoFactory();
             Task<ArduinoNano> arduino = factory.Search();
+            Assert.IsNotNull(arduino?.Result, "Failed to discovery Arduino device");
             return;
         }
     }
