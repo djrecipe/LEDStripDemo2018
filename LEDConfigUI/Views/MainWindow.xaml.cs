@@ -29,5 +29,23 @@ namespace AbaciLabs.LEDConfig.UI.Views
             this.DataContext = Model;
             return;
         }
+        private void btnCommitSettings_Click(object sender, RoutedEventArgs e)
+        {
+            this.Model.CommitSettings();
+            return;
+        }
+        private void btnDiscover_Click(object sender, RoutedEventArgs e)
+        {
+            this.Model.Discover();
+            return;
+        }
+
+        private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if((bool)e.NewValue)
+                this.Model.Discover();
+            return;
+        }
+
     }
 }

@@ -13,7 +13,11 @@ enum ActionTypes {
   RainbowCycle,
   TheaterRainbowCycle,
   Manual,
-  Discovery
+
+
+  
+  Discovery,
+  ExportSettings
 };
 
 // Number of RGB LEDs in strand
@@ -22,7 +26,6 @@ int countLEDs = 32;
 LPD8806 strip = LPD8806(countLEDs);
 // Current action type
 ActionTypes currentActionType = Unknown;
-ActionTypes lastActionType = Unknown;
 int currentDelay = 10;
 // Current serial input string
 String inputString = "";
@@ -94,11 +97,9 @@ void loop()
     case Manual:
       LightFill(strip.Color(0,   0,   0), currentDelay);
       break;
+    default:
     case Unknown:
       LightFill(strip.Color(0,   0,   0), currentDelay);
-      break;
-    case Discovery:
-      SendDiscoveryResponse();
       break;
       
   }
@@ -286,22 +287,38 @@ void ReadCommand()
   temp_str = input_string.substring(old_semicolon_index, semicolon_index);
   ActionTypes action_type = CommandStringToActionType(temp_str);
   Serial.println("> Action Type: "+ActionTypeToString(action_type));
-  lastActionType = currentActionType;
-  currentActionType = action_type;
-  // parse delay
-  old_semicolon_index = semicolon_index;
-  semicolon_index = input_string.indexOf(';', old_semicolon_index+1);
-  if (semicolon_index < 1)
+  if(IsSerialActionType(action_type))
   {
-    Serial.println("! Command Warning: Second Semicolon Not Found, Cannot Parse Delay Value");
-    return;
+    // Serial Action Type
+    switch(action_type)
+    {
+      case Discovery:
+        SendDiscoveryResponse();
+        break;
+      case ExportSettings:
+        SendSettingsResponse();
+        break;
+    }
   }
-  temp_str = input_string.substring(old_semicolon_index+1, semicolon_index);
-  Serial.println("> Parsing Command String to Delay Value: "+temp_str);
-  int delay_value = temp_str.toInt();
-  if(delay_value != 0)
-     currentDelay = delay_value;
-  Serial.println("> Delay Value: "+String(currentDelay));
+  else
+  {
+    // LED Action Type
+    currentActionType = action_type;
+    // parse delay
+    old_semicolon_index = semicolon_index;
+    semicolon_index = input_string.indexOf(';', old_semicolon_index+1);
+    if (semicolon_index < 1)
+    {
+      Serial.println("! Command Warning: Second Semicolon Not Found, Cannot Parse Delay Value");
+      return;
+    }
+    temp_str = input_string.substring(old_semicolon_index+1, semicolon_index);
+    Serial.println("> Parsing Command String to Delay Value: "+temp_str);
+    int delay_value = temp_str.toInt();
+    if(delay_value != 0)
+       currentDelay = delay_value;
+    Serial.println("> Delay Value: "+String(currentDelay));
+  }
   return;
 }
 
@@ -346,7 +363,22 @@ void ReadSettings()
 void SendDiscoveryResponse()
 {
   Serial.println("BM2018");
-  currentActionType = lastActionType;
+  return;
+}
+
+void SendSettingsResponse()
+{
+  // construct settings string
+  // .. add prefix
+  String text = ":ES:";
+  // .. add current action type
+  text += ActionTypeToCommandString(currentActionType) + ";";
+  // .. add current delay value
+  text += String(currentDelay) + ";";
+  // .. add suffix
+  text += ":ES:";
+  // send string
+  Serial.println(text);
   return;
 }
 
@@ -356,6 +388,8 @@ String ActionTypeToString(ActionTypes action_type)
   {
     case Discovery:
       return "Discovery";
+    case ExportSettings:
+      return "Export Settings";
     case Manual:
       return "Manual";
     case Rainbow:
@@ -371,9 +405,28 @@ String ActionTypeToString(ActionTypes action_type)
   }
 }
 
+String ActionTypeToCommandString(ActionTypes action_type)
+{
+  switch(action_type)
+  {
+    case Manual:
+      return "m";
+    case Rainbow:
+      return "b";
+    case RainbowCycle:
+      return "r";
+    case TheaterRainbowCycle:
+      return "t";
+    case Unknown:
+    default:
+      return "?";
+  }
+}
+
 ActionTypes CommandStringToActionType(String text)
 {
   Serial.println("> Parsing Command String to Action Type: "+text);
+  // LED Actions
   if (text == "b")
       return Rainbow;
   if (text== "r")
@@ -382,9 +435,25 @@ ActionTypes CommandStringToActionType(String text)
       return TheaterRainbowCycle;
   if (text == "m")
       return Manual;
+
+  // Serial Interface Actions
   if (text == "ID")
       return Discovery;
+  if (text == "ES")
+      return ExportSettings;
   return Unknown;
+}
+
+bool IsSerialActionType(ActionTypes action_type)
+{
+  switch(action_type)
+  {
+    case ExportSettings:
+    case Discovery:
+      return true;
+    default:
+      return false;
+  }
 }
 
 void WriteSettings()

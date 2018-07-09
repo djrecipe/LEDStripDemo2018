@@ -45,7 +45,9 @@ namespace AbaciLabs.LEDConfig.Arduino
                     if (line.Contains(ArduinoNanoFactory.DISCOVER_RESPONSE))
                     {
                         LogManager.Log.Info(string.Format("Discovered Arduino device on COM port '{0}'", port));
-                        return new ArduinoNano(serial);
+                        ArduinoNano device = new ArduinoNano(serial);
+                        device.RetrieveSettings();
+                        return device;
                     }
                 }
                 catch (Exception e)

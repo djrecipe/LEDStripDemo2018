@@ -3,53 +3,110 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:arduino="clr-namespace:AbaciLabs.LEDConfig.Arduino;assembly=AbaciLabs.LEDConfig"
         mc:Ignorable="d"
-        Title="Burning Man 2018" Height="450" Width="800">
+        Title="Burning Man 2018" Height="450" Width="800" IsVisibleChanged="Window_IsVisibleChanged">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="PatternModesData" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="arduino:PatternModes"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
 
-    <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <TabItem Header="Config">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="4*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-                <ComboBox Margin="20,20,20,0" VerticalAlignment="Top"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+            <TabItem Header="Configuration">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Label x:Name="lblPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0">Pattern</Label>
+                    <ComboBox x:Name="comboPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1"
+                              ItemsSource="{Binding Source={StaticResource PatternModesData}}" SelectedItem="{Binding SelectedPattern}"/>
 
-            </Grid>
-        </TabItem>
-        <TabItem Header="Color">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="4*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                </Grid.RowDefinitions>
-                <RadioButton x:Name="radioCustom" Content="Custom" HorizontalAlignment="Stretch" Margin="20,20,20,0"
+                    <Label x:Name="lblDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1">Delay</Label>
+                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1" Text="{Binding SelectedDelay}"/>
+                    
+                    <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="2" Width="120" Height="30"
+                            VerticalAlignment="Bottom" HorizontalAlignment="Right" Content="Commit" Click="btnCommitSettings_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Busy}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Busy}" Value="False">
+                                        <Setter Property="IsEnabled" Value="True"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Color">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="4*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <RadioButton x:Name="radioCustom" Content="Custom" HorizontalAlignment="Stretch" Margin="20,20,20,0"
                              Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="117"/>
-                <DataGrid HorizontalAlignment="Stretch" Margin="20,50,20,20" SelectionUnit="Cell" SnapsToDevicePixels="True" ItemsSource="{Binding LEDs.Colors}"
+                    <DataGrid HorizontalAlignment="Stretch" Margin="20,50,20,20" SelectionUnit="Cell" SnapsToDevicePixels="True" ItemsSource="{Binding LEDs.Colors}"
                           RowDetailsVisibilityMode="Visible" BorderThickness="0" CanUserResizeColumns="False" ClipToBounds="True" ColumnHeaderHeight="0"
                           AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" MinRowHeight="20"
                           Grid.Column="0" Grid.Row="0" VerticalAlignment="Stretch" Grid.RowSpan="2">
-                    <DataGrid.Columns>
-                        <DataGridTemplateColumn Width="*">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="-1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{Binding Path=Brush}"></Grid>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-                <RadioButton x:Name="radioRainbow" Content="Rainbow" HorizontalAlignment="Left" Margin="20,20,492,0"
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="-1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{Binding Path=Brush}"></Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <RadioButton x:Name="radioRainbow" Content="Rainbow" HorizontalAlignment="Left" Margin="20,20,492,0"
                     Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="117"/>
-            </Grid>
-        </TabItem>
-    </TabControl>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <StatusBar Grid.Row="1"  HorizontalAlignment="Stretch" Height="Auto" VerticalAlignment="Stretch" FlowDirection="RightToLeft">
+            <StatusBarItem x:Name="lblConnectionStatus" Content="{Binding ConnectionStatusText}" Height="Auto" Margin="10,5,10,5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            <Button x:Name="btnDiscover" HorizontalAlignment="Right" Padding="5,5,5,5" Margin="10,5,10,5" Content="Discover" Click="btnDiscover_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Busy}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"></Setter>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Busy}" Value="False">
+                                <Setter Property="IsEnabled" Value="True"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StatusBar>
+
+    </Grid>
 </Window>
