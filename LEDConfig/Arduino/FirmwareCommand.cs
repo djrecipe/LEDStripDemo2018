@@ -11,14 +11,15 @@ namespace AbaciLabs.LEDConfig.Arduino
         #region Static Members
         private static readonly Dictionary<ColorSchemes, string> ColorSchemeStrings = new Dictionary<ColorSchemes, string>()
         {
-            {ColorSchemes.Unknown, "?"},
-            {ColorSchemes.Rainbow, "r"},
-            {ColorSchemes.SimpleRed, "sr"},
-            {ColorSchemes.SimpleGreen, "sg"},
-            {ColorSchemes.SimpleBlue, "sb"},
             {ColorSchemes.PulsingRed, "pr"},
             {ColorSchemes.PulsingGreen, "pg"},
             {ColorSchemes.PulsingBlue, "pb"},
+            {ColorSchemes.Rainbow, "r"},
+            {ColorSchemes.Random, "x"},
+            {ColorSchemes.SimpleRed, "sr"},
+            {ColorSchemes.SimpleGreen, "sg"},
+            {ColorSchemes.SimpleBlue, "sb"},
+            {ColorSchemes.Unknown, "?"}
         };
         private static readonly Dictionary<PatternModes, string> PatternModeStrings = new Dictionary<PatternModes, string>()
         {

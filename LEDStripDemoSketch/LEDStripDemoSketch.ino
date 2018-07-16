@@ -30,7 +30,8 @@ enum ColorSchemes
   PulsingGreenColor,
   PulsingRedColor,
   PulsingBlueColor,
-  RainbowColor
+  RainbowColor,
+  RandomColor
 };
 // Number of RGB LEDs in strand
 int countLEDs = 32;
@@ -153,6 +154,9 @@ uint32_t GetColor(ColorSchemes scheme, uint16_t seed)
       break;
     case PulsingBlueColor:
       color = strip.Color(0, 0, ratio * 255.0);
+      break;
+    case RandomColor:
+      color = strip.Color(random(0,256), random(0, 256), random(0, 256));
       break;
     case RainbowColor:
       color = GetWheelColor(seed);
@@ -480,8 +484,16 @@ String ColorSchemeToCommandString(ColorSchemes scheme)
 {
   switch(scheme)
   {
+    case PulsingRedColor:
+      return "pr";
+    case PulsingGreenColor:
+      return "pg";
+    case PulsingBlueColor:
+      return "pb";
     case RainbowColor:
       return "r";
+    case RandomColor:
+      return "x";
     case SimpleRedColor:
       return "sr";
     case SimpleGreenColor:
@@ -497,8 +509,16 @@ String ColorSchemeToString(ColorSchemes scheme)
 {
   switch(scheme)
   {
+    case PulsingRedColor:
+      return "Pulsing Red";
+    case PulsingGreenColor:
+      return "Pulsing Green";
+    case PulsingBlueColor:
+      return "Pulsing Blue";
     case RainbowColor:
       return "Rainbow";
+    case RandomColor:
+      return "Randomn";
     case SimpleRedColor:
       return "Simple Red";
     case SimpleGreenColor:
@@ -532,20 +552,22 @@ ActionTypes CommandStringToActionType(String text)
 
 ColorSchemes CommandStringToColorScheme(String text)
 {
-  if (text == "r")
-    return RainbowColor;
-  if (text == "sr")
-    return SimpleRedColor;
-  if (text == "sg")
-    return SimpleGreenColor;
-  if (text == "sb")
-    return SimpleBlueColor;
   if (text == "pr")
     return PulsingRedColor;
   if (text == "pg")
     return PulsingGreenColor;
   if (text == "pb")
     return PulsingBlueColor;
+  if (text == "r")
+    return RainbowColor;
+  if (text == "x")
+    return RandomColor;
+  if (text == "sr")
+    return SimpleRedColor;
+  if (text == "sg")
+    return SimpleGreenColor;
+  if (text == "sb")
+    return SimpleBlueColor;
   return UnknownColor;
 }
 

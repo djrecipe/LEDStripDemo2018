@@ -23,6 +23,7 @@
         PulsingGreen = 4,
         PulsingRed = 5,
         PulsingBlue = 6,
-        Rainbow = 7
+        Rainbow = 7,
+        Random = 8
     }
 }
