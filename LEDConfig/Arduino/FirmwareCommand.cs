@@ -25,7 +25,8 @@ namespace AbaciLabs.LEDConfig.Arduino
             {PatternModes.Unknown, "?"},
             {PatternModes.Chase, "c"},
             {PatternModes.TheaterChase, "h"},
-            {PatternModes.Solid, "s"}
+            {PatternModes.Solid, "s"},
+            {PatternModes.Rain, "r"}
         };
         #endregion
         #region Static Properties

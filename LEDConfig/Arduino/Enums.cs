@@ -8,7 +8,8 @@
         Unknown = 0,
         Chase = 1,
         TheaterChase = 2,
-        Solid = 3
+        Solid = 3,
+        Rain = 4
     }
     /// <summary>
     /// LED color schemes

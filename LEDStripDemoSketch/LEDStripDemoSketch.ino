@@ -15,6 +15,7 @@ enum ActionTypes
   Chase,
   TheaterChase,
   Solid,
+  Rain,
   
   Discovery,
   ExportSettings
@@ -47,38 +48,27 @@ uint8_t currentStateIndex = 0;
 int currentDelay = 10;
 // Current serial input string
 String inputString = "";
-bool stringComplete = false;
 
 // Perform one-time start-up routines
 void setup()
 {
+  // random seed
+  randomSeed(analogRead(0));
   // initialize serial
   Serial.begin(9600);
   while(!Serial){;}
-  Serial.println("> Initializing Arduino...");
+  Serial.println("> Initializing Device...");
   // read settings from NVS
   ReadSettings();
   // initialize strip
   strip.begin();
-  // blank strip
-  uint32_t color = GetColor(currentColorScheme, 0);
-  LightSolid(0, 0);
-  strip.show();
+  ClearStrip();
   return;
 }
 
 
 void loop()
 {
-  // check if serial command string is complete
-  if(stringComplete)
-  {
-    // parse command and update settings
-    ReadCommand();
-    WriteSettings();
-    currentStateIndex = 0;
-  }
-
   // retrieve current color
   uint32_t color = GetColor(currentColorScheme, currentRainbowIndex);
   
@@ -92,11 +82,15 @@ void loop()
       LightChaseTheater(currentStateIndex, color, 3);
       break;
     case Solid:
-      LightSolid(currentStateIndex, color);
+      Light(currentStateIndex, color);
+      break;
+    case Rain:
+      currentStateIndex = random(0, strip.numPixels());
+      Light(currentStateIndex, color);
       break;
     default:
     case Unknown:
-      LightSolid(currentStateIndex, 0);
+      ClearStrip();
       break;
   }
   
@@ -108,10 +102,26 @@ void loop()
   currentRainbowIndex += currentRainbowIncrement;
   if(currentRainbowIndex >= WHEEL_SIZE)
     currentRainbowIndex = 0;
-    
-  // wait for delay and read serial
-  delay(currentDelay);
+
+  // read serial bus
   ReadSerial();
+
+  // wait for delay
+  delay(currentDelay);
+}
+
+/// <summary>
+/// Turn off all LEDs
+/// </summary>
+void ClearStrip()
+{
+  for(int i=0; i<strip.numPixels(); i++)
+  {
+    // light pixel
+    strip.setPixelColor(i, 0);
+  }
+  strip.show();
+  return;
 }
 
 /// <summary>
@@ -237,11 +247,11 @@ void LightChaseTheater(uint8_t index, uint32_t color, uint8_t spacing)
 }
 
 /// <summary>
-/// Progressively fill the entire strip with a single color, a la a progress bar
+/// Light a single pixel
 /// </summary>
-/// <param name=index>State index</param>
+/// <param name=index>Pixel index</param>
 /// <param name=color>Pixel color</param>
-void LightSolid(uint8_t index, uint32_t color)
+void Light(uint8_t index, uint32_t color)
 {
   // light pixel
   strip.setPixelColor(index, color);
@@ -249,27 +259,27 @@ void LightSolid(uint8_t index, uint32_t color)
   return;
 }
 
-void ReadCommand()
+/// <summary>
+/// Parse the specified string as a firmware command
+/// </summary>
+/// <param name=command>Command string to parse</param>
+void ParseCommand(String command)
 {
   String temp_str = "";
   Serial.println("> Reading Command... ");
-  // clear input string and mark as read
-  String input_string = inputString;
-  stringComplete = false;
-  inputString = "";
   // determine input string length
-  int str_length = input_string.length();
+  int str_length = command.length();
   // parse action type
   if(str_length < 1)
     return;
-  int semicolon_index = input_string.indexOf(';', 0);
+  int semicolon_index = command.indexOf(';', 0);
   int old_semicolon_index = 0;
   if (semicolon_index < 1)
   {
     Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Action Type");
     return;
   }
-  temp_str = input_string.substring(old_semicolon_index, semicolon_index);
+  temp_str = command.substring(old_semicolon_index, semicolon_index);
   ActionTypes action_type = CommandStringToActionType(temp_str);
   Serial.println("> Action Type: "+ActionTypeToString(action_type));
   if(IsSerialActionType(action_type))
@@ -291,38 +301,38 @@ void ReadCommand()
     currentActionType = action_type;
     // parse color scheme
     old_semicolon_index = semicolon_index;
-    semicolon_index = input_string.indexOf(';', old_semicolon_index+1);
+    semicolon_index = command.indexOf(';', old_semicolon_index+1);
     if (semicolon_index < 1)
     {
       Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Color Scheme");
       return;
     }
-    temp_str = input_string.substring(old_semicolon_index+1, semicolon_index);
+    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
     ColorSchemes color_scheme = CommandStringToColorScheme(temp_str);
     Serial.println("> Color Scheme: "+ColorSchemeToString(color_scheme));
     currentColorScheme = color_scheme;
     // parse delay
     old_semicolon_index = semicolon_index;
-    semicolon_index = input_string.indexOf(';', old_semicolon_index+1);
+    semicolon_index = command.indexOf(';', old_semicolon_index+1);
     if (semicolon_index < 1)
     {
       Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Delay Value");
       return;
     }
-    temp_str = input_string.substring(old_semicolon_index+1, semicolon_index);
+    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
     int delay_value = temp_str.toInt();
     if(delay_value != 0)
        currentDelay = delay_value;
     Serial.println("> Delay Value: "+String(currentDelay));
     // parse rainbow increment
     old_semicolon_index = semicolon_index;
-    semicolon_index = input_string.indexOf(';', old_semicolon_index+1);
+    semicolon_index = command.indexOf(';', old_semicolon_index+1);
     if (semicolon_index < 1)
     {
       Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Rainbow Increment");
       return;
     }
-    temp_str = input_string.substring(old_semicolon_index+1, semicolon_index);
+    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
     int rainbow_increment = temp_str.toInt();
     if(rainbow_increment != 0)
        currentRainbowIncrement = rainbow_increment;
@@ -343,10 +353,16 @@ void ReadSerial()
     // do something about it:
     if (input_char == '\n')
     {
-      stringComplete = true;
+      // parse command and update settings
+      ParseCommand(inputString);
+      WriteSettings();
+      ClearStrip();
+      currentStateIndex = 0;
+      inputString = "";
+      break;
     }
-    return;
   }
+  return;
 }
 
 void ReadSettings()
@@ -435,6 +451,8 @@ String ActionTypeToString(ActionTypes action_type)
       return "Theater Chase";
     case Solid:
       return "Solid";
+    case Rain:
+      return "Rain";
     default:
       return "Undefined!";
   }
@@ -450,6 +468,8 @@ String ActionTypeToCommandString(ActionTypes action_type)
       return "h";
     case Solid:
       return "s";
+    case Rain:
+      return "r";
     case Unknown:
     default:
       return "?";
@@ -499,6 +519,8 @@ ActionTypes CommandStringToActionType(String text)
       return TheaterChase;
   if (text == "s")
       return Solid;
+  if (text == "r")
+      return Rain;
 
   // Serial Interface Actions
   if (text == "ID")
