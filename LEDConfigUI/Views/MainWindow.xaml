@@ -6,12 +6,18 @@
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:arduino="clr-namespace:AbaciLabs.LEDConfig.Arduino;assembly=AbaciLabs.LEDConfig"
         mc:Ignorable="d"
-        Title="Burning Man 2018" Height="450" Width="800" IsVisibleChanged="Window_IsVisibleChanged">
+        Title="Burning Man 2018" Height="500" Width="800" IsVisibleChanged="Window_IsVisibleChanged">
     <Window.Resources>
         <ObjectDataProvider x:Key="PatternModesData" MethodName="GetValues"
                             ObjectType="{x:Type System:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="arduino:PatternModes"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="ColorSchemesData" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="arduino:ColorSchemes"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </Window.Resources>
@@ -33,15 +39,25 @@
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
+
                     <Label x:Name="lblPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0">Pattern</Label>
                     <ComboBox x:Name="comboPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1"
                               ItemsSource="{Binding Source={StaticResource PatternModesData}}" SelectedItem="{Binding SelectedPattern}"/>
 
-                    <Label x:Name="lblDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1">Delay</Label>
-                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1" Text="{Binding SelectedDelay}"/>
+                    <Label x:Name="lblColorScheme" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1">Color</Label>
+                    <ComboBox x:Name="comboColorScheme" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1"
+                              ItemsSource="{Binding Source={StaticResource ColorSchemesData}}" SelectedItem="{Binding SelectedColorScheme}"/>
+
+                    <Label x:Name="lblDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2">Delay</Label>
+                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" Text="{Binding SelectedDelay}"/>
+
+                    <Label x:Name="lblRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3">Rainbow Increment</Label>
+                    <TextBox x:Name="txtRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="3" Text="{Binding SelectedRainbowIncrement}"/>
                     
-                    <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="2" Width="120" Height="30"
+                    <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="4" Width="120" Height="30"
                             VerticalAlignment="Bottom" HorizontalAlignment="Right" Content="Commit" Click="btnCommitSettings_Click">
                         <Button.Style>
                             <Style TargetType="Button">
@@ -57,36 +73,6 @@
                         </Button.Style>
                     </Button>
 
-                </Grid>
-            </TabItem>
-            <TabItem Header="Color">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="4*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="1*"/>
-                    </Grid.RowDefinitions>
-                    <RadioButton x:Name="radioCustom" Content="Custom" HorizontalAlignment="Stretch" Margin="20,20,20,0"
-                             Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="117"/>
-                    <DataGrid HorizontalAlignment="Stretch" Margin="20,50,20,20" SelectionUnit="Cell" SnapsToDevicePixels="True" ItemsSource="{Binding LEDs.Colors}"
-                          RowDetailsVisibilityMode="Visible" BorderThickness="0" CanUserResizeColumns="False" ClipToBounds="True" ColumnHeaderHeight="0"
-                          AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserSortColumns="False" MinRowHeight="20"
-                          Grid.Column="0" Grid.Row="0" VerticalAlignment="Stretch" Grid.RowSpan="2">
-                        <DataGrid.Columns>
-                            <DataGridTemplateColumn Width="*">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Grid Margin="-1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{Binding Path=Brush}"></Grid>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <RadioButton x:Name="radioRainbow" Content="Rainbow" HorizontalAlignment="Left" Margin="20,20,492,0"
-                    Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="117"/>
                 </Grid>
             </TabItem>
         </TabControl>

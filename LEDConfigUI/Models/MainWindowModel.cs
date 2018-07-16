@@ -67,6 +67,16 @@ namespace AbaciLabs.LEDConfig.UI.Models
                 return;
             }
         }
+        private ColorSchemes _SelectedColorScheme = ColorSchemes.Unknown;
+        public ColorSchemes SelectedColorScheme
+        {
+            get { return this._SelectedColorScheme; }
+            set
+            {
+                this._SelectedColorScheme = value;
+                this.OnPropertyChanged("SelectedColorScheme");
+            }
+        }
         private PatternModes _SelectedPattern = PatternModes.Unknown;
         public PatternModes SelectedPattern
         {
@@ -75,6 +85,17 @@ namespace AbaciLabs.LEDConfig.UI.Models
             {
                 this._SelectedPattern = value;
                 this.OnPropertyChanged("SelectedPattern");
+            }
+        }
+        private int _SelectedRainbowIncrement = 1;
+        public int SelectedRainbowIncrement
+        {
+            get { return this._SelectedRainbowIncrement; }
+            set
+            {
+                this._SelectedRainbowIncrement = value;
+                this.OnPropertyChanged("SelectedRainbowIncrement");
+                return;
             }
         }
         #endregion
@@ -127,15 +148,17 @@ namespace AbaciLabs.LEDConfig.UI.Models
 
         private void UpdateSelectedValues()
         {
+            this.SelectedColorScheme = this.device?.ColorScheme ?? ColorSchemes.Unknown;
             this.SelectedDelay = this.device?.Delay ?? 10;
             this.SelectedPattern = this.device?.PatternMode ?? PatternModes.Unknown;
+            this.SelectedRainbowIncrement = this.device?.RainbowIncrement ?? 1;
             return;
         }
         #endregion
         #region Instance Events
         private void workerCommitSettings_DoWork(object sender, DoWorkEventArgs e)
         {
-            FirmwareCommand command = new FirmwareCommand(this.SelectedPattern, this.SelectedDelay);
+            FirmwareCommand command = new FirmwareCommand(this.SelectedPattern, this.SelectedColorScheme, this.SelectedDelay, this.SelectedRainbowIncrement);
             this.device.SendCommand(command);
             this.device.RetrieveSettings();
             return;

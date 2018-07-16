@@ -16,6 +16,10 @@ namespace AbaciLabs.LEDConfig.Arduino
         #endregion
         #region Instance Properties
         /// <summary>
+        /// LED color scheme
+        /// </summary>
+        public ColorSchemes ColorScheme { get; private set; } = ColorSchemes.Unknown;
+        /// <summary>
         /// Device is connected and serial port is open
         /// </summary>
         public bool Connected
@@ -31,6 +35,10 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// Device port name
         /// </summary>
         public string Port => this.serialPort.PortName;
+        /// <summary>
+        /// Rainbow color incrementer
+        /// </summary>
+        public int RainbowIncrement { get; private set; }
         #endregion
         #region Instance Methods
         /// <summary>
@@ -51,21 +59,28 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// </summary>
         public void RetrieveSettings()
         {
+            //
             this.SendCommand(FirmwareCommand.ExportSettings);
+            //
             string text = this.serialPort.ReadExisting();
             if(string.IsNullOrWhiteSpace(text))
                 throw new IOException("Failed to retrieve settings response from Arduino device");
+            //
             int start_index = text.IndexOf(":ES:");
             if(start_index < 0)
-                throw new IOException("Failed to locate settings response prefix");
+                throw new IOException(string.Format("Failed to locate settings response prefix ('{0}')", text));
             start_index += 4;
             int end_index = text.IndexOf(":ES:", start_index);
             if(end_index < 0)
-                throw new IOException("Failed to locate settings response suffix");
+                throw new IOException(string.Format("Failed to locate settings response suffix ('{0}')", text));
             text = text.Substring(start_index, end_index - start_index);
+            //
             FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
+            //
+            this.ColorScheme = command.ColorScheme;
             this.PatternMode = command.PatternMode;
             this.Delay = command.Delay;
+            this.RainbowIncrement = command.RainbowIncrement;
             return;
         }
         /// <summary>

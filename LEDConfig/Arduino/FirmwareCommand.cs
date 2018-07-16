@@ -9,13 +9,23 @@ namespace AbaciLabs.LEDConfig.Arduino
     public class FirmwareCommand
     {
         #region Static Members
+        private static readonly Dictionary<ColorSchemes, string> ColorSchemeStrings = new Dictionary<ColorSchemes, string>()
+        {
+            {ColorSchemes.Unknown, "?"},
+            {ColorSchemes.Rainbow, "r"},
+            {ColorSchemes.SimpleRed, "sr"},
+            {ColorSchemes.SimpleGreen, "sg"},
+            {ColorSchemes.SimpleBlue, "sb"},
+            {ColorSchemes.PulsingRed, "pr"},
+            {ColorSchemes.PulsingGreen, "pg"},
+            {ColorSchemes.PulsingBlue, "pb"},
+        };
         private static readonly Dictionary<PatternModes, string> PatternModeStrings = new Dictionary<PatternModes, string>()
         {
-            {PatternModes.Manual, "m"},
-            {PatternModes.Rainbow, "b"},
-            {PatternModes.RainbowCycle, "r"},
-            {PatternModes.TheaterRainbowCycle, "t"},
-            {PatternModes.Unknown, "?"}
+            {PatternModes.Unknown, "?"},
+            {PatternModes.Chase, "c"},
+            {PatternModes.TheaterChase, "h"},
+            {PatternModes.Solid, "s"}
         };
         #endregion
         #region Static Properties
@@ -39,9 +49,16 @@ namespace AbaciLabs.LEDConfig.Arduino
         public static FirmwareCommand ParseCommandString(string text)
         {
             string[] words = text.Split(';');
+            // pattern mode
             PatternModes pattern_mode = PatternModeStrings.FirstOrDefault(pair => pair.Value == words[0]).Key;
-            int delay = int.Parse(words[1]);
-            FirmwareCommand command = new FirmwareCommand(pattern_mode, delay);
+            // color scheme
+            ColorSchemes color_scheme = ColorSchemeStrings.FirstOrDefault(pair => pair.Value == words[1]).Key;
+            // delay value
+            int delay = int.Parse(words[2]);
+            // rainbow increment
+            int rainbow_increment = int.Parse(words[3]);
+            // create firmware command
+            FirmwareCommand command = new FirmwareCommand(pattern_mode, color_scheme, delay, rainbow_increment);
             return command;
         }
         #endregion
@@ -49,8 +66,10 @@ namespace AbaciLabs.LEDConfig.Arduino
         private readonly string commandString = null;
         #endregion
         #region Instance Properties
+        public ColorSchemes ColorScheme { get; private set; }
         public int Delay {get; private set; }
         public PatternModes PatternMode { get; private set; }
+        public int RainbowIncrement {get; private set; }
         #endregion
         #region Instance Methods
         private FirmwareCommand(string command)
@@ -62,18 +81,22 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// Create a new firmware command string using the specified parameters
         /// </summary>
         /// <param name="pattern">LED pattern mode</param>
+        /// <param name="color_scheme">LED color scheme</param>
         /// <param name="delay">LED cycle delay value</param>
-        public FirmwareCommand(PatternModes pattern, int delay = 10)
+        /// <param name="rainbow_increment">LED rainbow color incrementer</param>
+        public FirmwareCommand(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment)
         {
+            this.ColorScheme = color_scheme;
             this.Delay = delay;
             this.PatternMode = pattern;
+            this.RainbowIncrement = rainbow_increment;
 
-            this.commandString = this.CreateCommandString(pattern, delay);
+            this.commandString = this.CreateCommandString(pattern, color_scheme, delay, rainbow_increment);
             return;
         }
-        private string CreateCommandString(PatternModes pattern, int delay)
+        private string CreateCommandString(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment)
         {
-            string command = string.Format("{0};{1};", PatternModeStrings[pattern], delay);
+            string command = string.Format("{0};{1};{2};{3};", PatternModeStrings[pattern], ColorSchemeStrings[color_scheme], delay, rainbow_increment);
             return command;
         }
         #endregion

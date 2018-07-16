@@ -10,6 +10,11 @@ namespace AbaciLabs.LEDConfig.Arduino
     {
         #region Instance Properties
         /// <summary>
+        /// LED color scheme
+        /// </summary>
+        [DataMember]
+        public ColorSchemes ColorScheme { get; set; } = ColorSchemes.Unknown;
+        /// <summary>
         /// Delay value for LED cycles
         /// </summary>
         [DataMember]
