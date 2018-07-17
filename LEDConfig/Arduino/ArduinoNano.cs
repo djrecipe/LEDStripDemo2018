@@ -39,6 +39,7 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// Rainbow color incrementer
         /// </summary>
         public int RainbowIncrement { get; private set; }
+        public int Spacing { get; private set; }
         #endregion
         #region Instance Methods
         /// <summary>
@@ -81,6 +82,7 @@ namespace AbaciLabs.LEDConfig.Arduino
             this.PatternMode = command.PatternMode;
             this.Delay = command.Delay;
             this.RainbowIncrement = command.RainbowIncrement;
+            this.Spacing = command.Spacing;
             return;
         }
         /// <summary>
@@ -92,7 +94,7 @@ namespace AbaciLabs.LEDConfig.Arduino
             this.serialPort.DiscardInBuffer();
             this.serialPort.DiscardOutBuffer();
             this.serialPort.WriteLine(command.ToString());
-            Thread.Sleep(250);
+            Thread.Sleep(2000);
         }
         /// <summary>
         /// Clean-up the object and prepare for deletion

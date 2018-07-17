@@ -2,6 +2,7 @@
 #define ADR_COLOR_SCHEME 2
 #define ADR_DELAY 4
 #define ADR_RAINBOW_INCR 8
+#define ADR_SPACING 10
 
 #define WHEEL_SIZE 384 // wheel sizes > 384 will cause gaps in the rainbow, while < 384 will cause truncated rainbow
 
@@ -14,8 +15,9 @@ enum ActionTypes
   Unknown,
   Chase,
   TheaterChase,
-  Solid,
+  Fill,
   Rain,
+  Solid,
   
   Discovery,
   ExportSettings
@@ -43,12 +45,14 @@ ActionTypes currentActionType = Unknown;
 ColorSchemes currentColorScheme = UnknownColor;
 uint32_t currentRainbowIncrement = 1;
 uint32_t currentRainbowIndex = 0;
-uint8_t currentStateIncrement = 1;
-uint8_t currentStateIndex = 0;
+int currentStateIncrement = 1;
+int currentStateIndex = 0;
+int currentSpacing = 4;
 // current delay value
 int currentDelay = 10;
 // Current serial input string
 String inputString = "";
+bool incrementingRainbow = true;
 
 // Perform one-time start-up routines
 void setup()
@@ -77,17 +81,23 @@ void loop()
   switch(currentActionType)
   {
     case Chase:
-      LightChase(currentStateIndex, color, 1);
+      LightChase(currentStateIndex, color, currentSpacing);
       break;
     case TheaterChase:
-      LightChaseTheater(currentStateIndex, color, 3);
+      LightChaseTheater(currentStateIndex, color, currentSpacing);
       break;
-    case Solid:
+    case Fill:
       Light(currentStateIndex, color);
       break;
     case Rain:
-      currentStateIndex = random(0, strip.numPixels());
+      currentStateIncrement = random(-1 * currentSpacing,currentSpacing + 1);
       Light(currentStateIndex, color);
+      break;
+    case Solid:
+      for(currentStateIndex=0; currentStateIndex<strip.numPixels(); currentStateIndex++)
+      {
+        Light(currentStateIndex, color);
+      }
       break;
     default:
     case Unknown:
@@ -96,14 +106,8 @@ void loop()
   }
   
   // increment state index
-  currentStateIndex += currentStateIncrement;
-  if(currentStateIndex >= strip.numPixels())
-    currentStateIndex = 0;
-  // increment rainbow index
-  currentRainbowIndex += currentRainbowIncrement;
-  if(currentRainbowIndex >= WHEEL_SIZE)
-    currentRainbowIndex = 0;
-
+  currentStateIndex = (currentStateIndex + currentStateIncrement)%strip.numPixels();
+  IncrementRainbowIndex();
   // read serial bus
   ReadSerial();
 
@@ -135,28 +139,36 @@ uint32_t GetColor(ColorSchemes scheme, uint16_t seed)
 {
   uint32_t color = strip.Color(0, 0, 0);
   float ratio = ((float)seed)/((float)WHEEL_SIZE);
+  unsigned int primary_value = 0;
+  unsigned int secondary_value = 0;
   switch(scheme)
   {
     case SimpleRedColor:
-      color = strip.Color(255, 0, 0);
+      color = strip.Color(12, 0, 0);
       break;
     case PulsingRedColor:
-      color = strip.Color(ratio * 255.0, 0, 0);
+      primary_value = (unsigned int)(ratio * 90.0);
+      secondary_value = (unsigned int)(0);
+      color = strip.Color(primary_value, secondary_value, secondary_value);
       break;
     case SimpleGreenColor:
-      color = strip.Color(0, 255, 0);
+      color = strip.Color(0, 12, 0);
       break;
     case PulsingGreenColor:
-      color = strip.Color(0, ratio * 255.0, 0);
+      primary_value = (unsigned int)(ratio * 90.0);
+      secondary_value = (unsigned int)(0);
+      color = strip.Color(secondary_value, primary_value, secondary_value);
       break;
     case SimpleBlueColor:
-      color = strip.Color(0, 0, 255);
+      color = strip.Color(0, 0, 12);
       break;
     case PulsingBlueColor:
-      color = strip.Color(0, 0, ratio * 255.0);
+      primary_value = (unsigned int)(ratio * 90.0);
+      secondary_value = (unsigned int)(0);
+      color = strip.Color(secondary_value, secondary_value, primary_value);
       break;
     case RandomColor:
-      color = strip.Color(random(0,256), random(0, 256), random(0, 256));
+      color = strip.Color(random(0,127), random(0, 12), random(0, 12));
       break;
     case RainbowColor:
       color = GetWheelColor(seed);
@@ -200,6 +212,30 @@ uint32_t GetWheelColor(uint16_t position)
   return(strip.Color(r,g,b));
 }
 
+void IncrementRainbowIndex()
+{
+  switch(currentColorScheme)
+  {
+    case RainbowColor:
+      currentRainbowIndex += currentRainbowIncrement;
+      if(currentRainbowIndex >= WHEEL_SIZE)
+        currentRainbowIndex = 0;
+      break;
+    default:
+      // increment rainbow index
+      if(incrementingRainbow)
+        currentRainbowIndex += currentRainbowIncrement;
+      else
+        currentRainbowIndex -= currentRainbowIncrement;
+      if(currentRainbowIndex >= WHEEL_SIZE)
+        incrementingRainbow = false;
+      else if(currentRainbowIndex <=0)
+        incrementingRainbow = true;
+      break;
+  }
+  return;
+}
+
 /// <summary>
 /// Chase a set of sequential pixels down the strip
 /// </summary>
@@ -209,18 +245,21 @@ uint32_t GetWheelColor(uint16_t position)
 void LightChase(uint8_t index, uint32_t color, uint8_t count)
 {
   // queue new pixels on
-  for(int j=0; j<count && index+j<strip.numPixels(); j++)
+  int target_index = 0;
+  for(int j=0; j<count && ((int)index)-j<(int)strip.numPixels(); j++)
   {
-    strip.setPixelColor(index+j, color);
+    target_index = (((int)index) - j)%strip.numPixels();
+    strip.setPixelColor(target_index, color);
   }
 
   // update lit pixels
   strip.show();
   
   // queue pixels off
-  for(int j=0; j<count && index+j<strip.numPixels(); j++)
+  for(int j=0; j<count && ((int)index)-j<(int)strip.numPixels(); j++)
   {
-    strip.setPixelColor(index+j, 0);
+    target_index = (((int)index) - j)%strip.numPixels();
+    strip.setPixelColor(target_index, 0);
   }
   return;
 }
@@ -234,18 +273,20 @@ void LightChase(uint8_t index, uint32_t color, uint8_t count)
 void LightChaseTheater(uint8_t index, uint32_t color, uint8_t spacing)
 {
   // queue new pixels on
-  for (int j=0; index+j<strip.numPixels(); j += spacing)
+  int target_index = 0;
+  for (int j=0; j<strip.numPixels(); j += spacing)
   {
-    strip.setPixelColor(index+j, color);
+    target_index = (j+index)%strip.numPixels();
+    strip.setPixelColor(target_index, color);
   }
-
   // update lit pixels
   strip.show();
 
   // queue pixels off
-  for (int j=0; index+j<strip.numPixels(); j += spacing)
+  for (int j=0; j<strip.numPixels(); j += spacing)
   {
-    strip.setPixelColor(index+j, 0);
+    target_index = (j+index)%strip.numPixels();
+    strip.setPixelColor(target_index, 0);
   }
   return;
 }
@@ -333,14 +374,27 @@ void ParseCommand(String command)
     semicolon_index = command.indexOf(';', old_semicolon_index+1);
     if (semicolon_index < 1)
     {
-      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Rainbow Increment");
+      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Color Increment");
       return;
     }
     temp_str = command.substring(old_semicolon_index+1, semicolon_index);
     int rainbow_increment = temp_str.toInt();
     if(rainbow_increment != 0)
        currentRainbowIncrement = rainbow_increment;
-    Serial.println("> Rainbow Increment: "+String(currentRainbowIncrement));
+    Serial.println("> Color Increment: "+String(currentRainbowIncrement));
+    // parse spacing value
+    old_semicolon_index = semicolon_index;
+    semicolon_index = command.indexOf(';', old_semicolon_index+1);
+    if (semicolon_index < 1)
+    {
+      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Spacing");
+      return;
+    }
+    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
+    int spacing = temp_str.toInt();
+    if(spacing != 0)
+       currentSpacing = spacing;
+    Serial.println("> Spacing: "+String(currentSpacing));
   }
   return;
 }
@@ -399,7 +453,14 @@ void ReadSettings()
     currentRainbowIncrement = 1;
   else
     currentRainbowIncrement = value;
-  Serial.println("> Rainbow Increment: "+String(currentRainbowIncrement));
+  Serial.println("> Color Increment: "+String(currentRainbowIncrement));
+  // read spacing
+  value = EEPROM.read(ADR_SPACING);
+  if(value == 255)
+    currentSpacing = 5;
+  else
+    currentSpacing = value;
+  Serial.println("> Spacing: "+String(currentSpacing));
   return;
 }
 
@@ -420,8 +481,10 @@ void SendSettingsResponse()
   text += ColorSchemeToCommandString(currentColorScheme) + ";";
   // .. add current delay value
   text += String(currentDelay) + ";";
-  // .. add current rainbow increment
+  // .. add current color increment
   text += String(currentRainbowIncrement) + ";";
+  // .. add current spacing value
+  text += String(currentSpacing) + ";";
   // .. add suffix
   text += ":ES:";
   // send string
@@ -435,6 +498,7 @@ void WriteSettings()
   EEPROM.write(ADR_COLOR_SCHEME, currentColorScheme);
   EEPROM.write(ADR_DELAY, currentDelay);
   EEPROM.write(ADR_RAINBOW_INCR, currentRainbowIncrement);
+  EEPROM.write(ADR_SPACING, currentSpacing);
   return;
 }
 
@@ -453,10 +517,12 @@ String ActionTypeToString(ActionTypes action_type)
       return "Chase";
     case TheaterChase:
       return "Theater Chase";
-    case Solid:
-      return "Solid";
+    case Fill:
+      return "Fill";
     case Rain:
       return "Rain";
+    case Solid:
+      return "Solid";
     default:
       return "Undefined!";
   }
@@ -470,10 +536,12 @@ String ActionTypeToCommandString(ActionTypes action_type)
       return "c";
     case TheaterChase:
       return "h";
-    case Solid:
-      return "s";
+    case Fill:
+      return "f";
     case Rain:
       return "r";
+    case Solid:
+      return "s";
     case Unknown:
     default:
       return "?";
@@ -537,10 +605,12 @@ ActionTypes CommandStringToActionType(String text)
       return Chase;
   if (text == "h")
       return TheaterChase;
-  if (text == "s")
-      return Solid;
+  if (text == "f")
+      return Fill;
   if (text == "r")
       return Rain;
+  if (text == "s")
+      return Solid;
 
   // Serial Interface Actions
   if (text == "ID")

@@ -98,6 +98,17 @@ namespace AbaciLabs.LEDConfig.UI.Models
                 return;
             }
         }
+        private int _SelectedSpacing = 5;
+        public int SelectedSpacing
+        {
+            get { return this._SelectedSpacing; }
+            set
+            {
+                this._SelectedSpacing = value;
+                this.OnPropertyChanged("SelectedSpacing");
+                return;
+            }
+        }
         #endregion
         #region Instance Methods
         public MainWindowModel()
@@ -152,13 +163,14 @@ namespace AbaciLabs.LEDConfig.UI.Models
             this.SelectedDelay = this.device?.Delay ?? 10;
             this.SelectedPattern = this.device?.PatternMode ?? PatternModes.Unknown;
             this.SelectedRainbowIncrement = this.device?.RainbowIncrement ?? 1;
+            this.SelectedSpacing = this.device?.Spacing ?? 5;
             return;
         }
         #endregion
         #region Instance Events
         private void workerCommitSettings_DoWork(object sender, DoWorkEventArgs e)
         {
-            FirmwareCommand command = new FirmwareCommand(this.SelectedPattern, this.SelectedColorScheme, this.SelectedDelay, this.SelectedRainbowIncrement);
+            FirmwareCommand command = new FirmwareCommand(this.SelectedPattern, this.SelectedColorScheme, this.SelectedDelay, this.SelectedRainbowIncrement, this.SelectedSpacing);
             this.device.SendCommand(command);
             this.device.RetrieveSettings();
             return;

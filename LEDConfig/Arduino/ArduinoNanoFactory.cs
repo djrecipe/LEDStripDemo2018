@@ -38,9 +38,11 @@ namespace AbaciLabs.LEDConfig.Arduino
                     serial = new SerialPort(port);
                     serial.BaudRate = 9600;
                     serial.NewLine = "\n";
+                    serial.WriteTimeout = 2000;
+                    serial.ReadTimeout = 2000;
                     serial.Open();
                     serial.WriteLine(FirmwareCommand.Discovery.ToString());
-                    Thread.Sleep(500);
+                    Thread.Sleep(2000);
                     string line = serial.ReadExisting();
                     if (line.Contains(ArduinoNanoFactory.DISCOVER_RESPONSE))
                     {

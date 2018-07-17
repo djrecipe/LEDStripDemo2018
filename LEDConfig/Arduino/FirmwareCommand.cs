@@ -26,8 +26,9 @@ namespace AbaciLabs.LEDConfig.Arduino
             {PatternModes.Unknown, "?"},
             {PatternModes.Chase, "c"},
             {PatternModes.TheaterChase, "h"},
+            {PatternModes.Fill, "f"},
+            {PatternModes.Rain, "r"},
             {PatternModes.Solid, "s"},
-            {PatternModes.Rain, "r"}
         };
         #endregion
         #region Static Properties
@@ -59,8 +60,10 @@ namespace AbaciLabs.LEDConfig.Arduino
             int delay = int.Parse(words[2]);
             // rainbow increment
             int rainbow_increment = int.Parse(words[3]);
+            // spacing
+            int spacing = int.Parse(words[4]);
             // create firmware command
-            FirmwareCommand command = new FirmwareCommand(pattern_mode, color_scheme, delay, rainbow_increment);
+            FirmwareCommand command = new FirmwareCommand(pattern_mode, color_scheme, delay, rainbow_increment, spacing);
             return command;
         }
         #endregion
@@ -71,7 +74,8 @@ namespace AbaciLabs.LEDConfig.Arduino
         public ColorSchemes ColorScheme { get; private set; }
         public int Delay {get; private set; }
         public PatternModes PatternMode { get; private set; }
-        public int RainbowIncrement {get; private set; }
+        public int RainbowIncrement { get; private set; }
+        public int Spacing { get; private set; }
         #endregion
         #region Instance Methods
         private FirmwareCommand(string command)
@@ -86,19 +90,21 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// <param name="color_scheme">LED color scheme</param>
         /// <param name="delay">LED cycle delay value</param>
         /// <param name="rainbow_increment">LED rainbow color incrementer</param>
-        public FirmwareCommand(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment)
+        /// <param name="spacing">Sequence spacing value</param>
+        public FirmwareCommand(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment, int spacing)
         {
             this.ColorScheme = color_scheme;
             this.Delay = delay;
             this.PatternMode = pattern;
             this.RainbowIncrement = rainbow_increment;
+            this.Spacing = spacing;
 
-            this.commandString = this.CreateCommandString(pattern, color_scheme, delay, rainbow_increment);
+            this.commandString = this.CreateCommandString(pattern, color_scheme, delay, rainbow_increment, spacing);
             return;
         }
-        private string CreateCommandString(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment)
+        private string CreateCommandString(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment, int spacing)
         {
-            string command = string.Format("{0};{1};{2};{3};", PatternModeStrings[pattern], ColorSchemeStrings[color_scheme], delay, rainbow_increment);
+            string command = string.Format("{0};{1};{2};{3};{4};", PatternModeStrings[pattern], ColorSchemeStrings[color_scheme], delay, rainbow_increment, spacing);
             return command;
         }
         #endregion

@@ -6,7 +6,7 @@
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:arduino="clr-namespace:AbaciLabs.LEDConfig.Arduino;assembly=AbaciLabs.LEDConfig"
         mc:Ignorable="d"
-        Title="Burning Man 2018" Height="500" Width="800" IsVisibleChanged="Window_IsVisibleChanged">
+        Title="Burning Man 2018" Height="550" Width="800" IsVisibleChanged="Window_IsVisibleChanged">
     <Window.Resources>
         <ObjectDataProvider x:Key="PatternModesData" MethodName="GetValues"
                             ObjectType="{x:Type System:Enum}">
@@ -41,6 +41,7 @@
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
 
                     <Label x:Name="lblPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0">Pattern</Label>
@@ -54,10 +55,13 @@
                     <Label x:Name="lblDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2">Delay</Label>
                     <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" Text="{Binding SelectedDelay}"/>
 
-                    <Label x:Name="lblRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3">Rainbow Increment</Label>
+                    <Label x:Name="lblRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3">Color Increment</Label>
                     <TextBox x:Name="txtRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="3" Text="{Binding SelectedRainbowIncrement}"/>
+
+                    <Label x:Name="lblSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4">Spacing</Label>
+                    <TextBox x:Name="txtSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="4" Text="{Binding SelectedSpacing}"/>
                     
-                    <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="4" Width="120" Height="30"
+                    <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="5" Width="120" Height="30"
                             VerticalAlignment="Bottom" HorizontalAlignment="Right" Content="Commit" Click="btnCommitSettings_Click">
                         <Button.Style>
                             <Style TargetType="Button">
