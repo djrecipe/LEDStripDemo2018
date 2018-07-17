@@ -81,12 +81,15 @@ void loop()
   switch(currentActionType)
   {
     case Chase:
+      currentStateIncrement = 1;
       LightChase(currentStateIndex, color, currentSpacing);
       break;
     case TheaterChase:
+      currentStateIncrement = 1;
       LightChaseTheater(currentStateIndex, color, currentSpacing);
       break;
     case Fill:
+      currentStateIncrement = 1;
       Light(currentStateIndex, color);
       break;
     case Rain:
@@ -94,6 +97,7 @@ void loop()
       Light(currentStateIndex, color);
       break;
     case Solid:
+      currentStateIncrement = 1;
       for(currentStateIndex=0; currentStateIndex<strip.numPixels(); currentStateIndex++)
       {
         Light(currentStateIndex, color);
@@ -101,6 +105,7 @@ void loop()
       break;
     default:
     case Unknown:
+      currentStateIncrement = 1;
       ClearStrip();
       break;
   }
@@ -139,36 +144,36 @@ uint32_t GetColor(ColorSchemes scheme, uint16_t seed)
 {
   uint32_t color = strip.Color(0, 0, 0);
   float ratio = ((float)seed)/((float)WHEEL_SIZE);
-  unsigned int primary_value = 0;
-  unsigned int secondary_value = 0;
+  byte primary_value = 0;
+  byte secondary_value = 0;
   switch(scheme)
   {
     case SimpleRedColor:
-      color = strip.Color(12, 0, 0);
+      color = strip.Color(100, 0, 0);
       break;
     case PulsingRedColor:
-      primary_value = (unsigned int)(ratio * 90.0);
-      secondary_value = (unsigned int)(0);
+      primary_value = ratio * 45.0;
+      secondary_value = 1;
       color = strip.Color(primary_value, secondary_value, secondary_value);
       break;
     case SimpleGreenColor:
-      color = strip.Color(0, 12, 0);
+      color = strip.Color(0, 100, 0);
       break;
     case PulsingGreenColor:
-      primary_value = (unsigned int)(ratio * 90.0);
-      secondary_value = (unsigned int)(0);
+      primary_value = ratio * 45.0;
+      secondary_value = 1;
       color = strip.Color(secondary_value, primary_value, secondary_value);
       break;
     case SimpleBlueColor:
-      color = strip.Color(0, 0, 12);
+      color = strip.Color(0, 0, 100);
       break;
     case PulsingBlueColor:
-      primary_value = (unsigned int)(ratio * 90.0);
-      secondary_value = (unsigned int)(0);
+      primary_value = ratio * 45.0;
+      secondary_value = 1;
       color = strip.Color(secondary_value, secondary_value, primary_value);
       break;
     case RandomColor:
-      color = strip.Color(random(0,127), random(0, 12), random(0, 12));
+      color = strip.Color(random(0,127), random(0, 127), random(0, 127));
       break;
     case RainbowColor:
       color = GetWheelColor(seed);
