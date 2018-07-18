@@ -13,8 +13,8 @@ namespace LEDConfig.Tests
         {
             string text = "c;sr;100;1;";
             FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
-            Assert.AreEqual(PatternModes.Chase, command.PatternMode, "Pattern mode mismatch");
-            Assert.AreEqual(100, command.Delay, "Pattern mode mismatch");
+            Assert.AreEqual(PatternModes.Chase, command.Settings.PatternMode, "Pattern mode mismatch");
+            Assert.AreEqual(100, command.Settings.Delay, "Pattern mode mismatch");
             return;
         }
         [TestMethod]

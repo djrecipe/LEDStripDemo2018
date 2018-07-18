@@ -10,6 +10,11 @@ namespace AbaciLabs.LEDConfig.Arduino
     {
         #region Instance Properties
         /// <summary>
+        /// Color cycling increment value
+        /// </summary>
+        [DataMember]
+        public int ColorIncrement { get; set; } = 1;
+        /// <summary>
         /// LED color scheme
         /// </summary>
         [DataMember]
@@ -24,6 +29,11 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// </summary>
         [DataMember]
         public PatternModes PatternMode { get; set; } = PatternModes.Unknown;
+        /// <summary>
+        /// LED pattern spacing value
+        /// </summary>
+        [DataMember]
+        public int PatternSpacing { get; set; } = 4;
         #endregion
     }
 }

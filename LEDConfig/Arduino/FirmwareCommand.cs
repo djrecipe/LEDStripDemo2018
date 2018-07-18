@@ -58,12 +58,20 @@ namespace AbaciLabs.LEDConfig.Arduino
             ColorSchemes color_scheme = ColorSchemeStrings.FirstOrDefault(pair => pair.Value == words[1]).Key;
             // delay value
             int delay = int.Parse(words[2]);
-            // rainbow increment
-            int rainbow_increment = int.Parse(words[3]);
+            // color increment
+            int color_increment = int.Parse(words[3]);
             // spacing
             int spacing = int.Parse(words[4]);
             // create firmware command
-            FirmwareCommand command = new FirmwareCommand(pattern_mode, color_scheme, delay, rainbow_increment, spacing);
+            FirmwareSettings settings = new FirmwareSettings()
+            {
+                ColorIncrement = color_increment,
+                ColorScheme = color_scheme,
+                Delay = delay,
+                PatternMode = pattern_mode,
+                PatternSpacing = spacing
+            };
+            FirmwareCommand command = new FirmwareCommand(settings);
             return command;
         }
         #endregion
@@ -71,11 +79,7 @@ namespace AbaciLabs.LEDConfig.Arduino
         private readonly string commandString = null;
         #endregion
         #region Instance Properties
-        public ColorSchemes ColorScheme { get; private set; }
-        public int Delay {get; private set; }
-        public PatternModes PatternMode { get; private set; }
-        public int RainbowIncrement { get; private set; }
-        public int Spacing { get; private set; }
+        public FirmwareSettings Settings { get; private set; }
         #endregion
         #region Instance Methods
         private FirmwareCommand(string command)
@@ -86,25 +90,18 @@ namespace AbaciLabs.LEDConfig.Arduino
         /// <summary>
         /// Create a new firmware command string using the specified parameters
         /// </summary>
-        /// <param name="pattern">LED pattern mode</param>
-        /// <param name="color_scheme">LED color scheme</param>
-        /// <param name="delay">LED cycle delay value</param>
-        /// <param name="rainbow_increment">LED rainbow color incrementer</param>
-        /// <param name="spacing">Sequence spacing value</param>
-        public FirmwareCommand(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment, int spacing)
+        /// <param name="settings">Firmware settings</param>
+        public FirmwareCommand(FirmwareSettings settings)
         {
-            this.ColorScheme = color_scheme;
-            this.Delay = delay;
-            this.PatternMode = pattern;
-            this.RainbowIncrement = rainbow_increment;
-            this.Spacing = spacing;
+            this.Settings = settings;
 
-            this.commandString = this.CreateCommandString(pattern, color_scheme, delay, rainbow_increment, spacing);
+            this.commandString = this.CreateCommandString(settings);
             return;
         }
-        private string CreateCommandString(PatternModes pattern, ColorSchemes color_scheme, int delay, int rainbow_increment, int spacing)
+        private string CreateCommandString(FirmwareSettings settings)
         {
-            string command = string.Format("{0};{1};{2};{3};{4};", PatternModeStrings[pattern], ColorSchemeStrings[color_scheme], delay, rainbow_increment, spacing);
+            string command = string.Format("{0};{1};{2};{3};{4};", PatternModeStrings[settings.PatternMode],
+                ColorSchemeStrings[settings.ColorScheme], settings.Delay, settings.ColorIncrement, settings.PatternSpacing);
             return command;
         }
         #endregion

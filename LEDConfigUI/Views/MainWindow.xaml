@@ -46,20 +46,20 @@
 
                     <Label x:Name="lblPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0">Pattern</Label>
                     <ComboBox x:Name="comboPattern" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1"
-                              ItemsSource="{Binding Source={StaticResource PatternModesData}}" SelectedItem="{Binding SelectedPattern}"/>
+                              ItemsSource="{Binding Source={StaticResource PatternModesData}}" SelectedItem="{Binding Settings.PatternMode}"/>
 
                     <Label x:Name="lblColorScheme" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1">Color</Label>
                     <ComboBox x:Name="comboColorScheme" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1"
-                              ItemsSource="{Binding Source={StaticResource ColorSchemesData}}" SelectedItem="{Binding SelectedColorScheme}"/>
+                              ItemsSource="{Binding Source={StaticResource ColorSchemesData}}" SelectedItem="{Binding Settings.ColorScheme}"/>
 
                     <Label x:Name="lblDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2">Delay</Label>
-                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" Text="{Binding SelectedDelay}"/>
+                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" Text="{Binding Settings.Delay}"/>
 
-                    <Label x:Name="lblRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3">Color Increment</Label>
-                    <TextBox x:Name="txtRainbowIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="3" Text="{Binding SelectedRainbowIncrement}"/>
+                    <Label x:Name="lblColorIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3">Color Increment</Label>
+                    <TextBox x:Name="txtColorIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="3" Text="{Binding Settings.ColorIncrement}"/>
 
                     <Label x:Name="lblSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4">Spacing</Label>
-                    <TextBox x:Name="txtSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="4" Text="{Binding SelectedSpacing}"/>
+                    <TextBox x:Name="txtSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="4" Text="{Binding Settings.PatternSpacing}"/>
                     
                     <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="5" Width="120" Height="30"
                             VerticalAlignment="Bottom" HorizontalAlignment="Right" Content="Commit" Click="btnCommitSettings_Click">

@@ -16,30 +16,17 @@ namespace AbaciLabs.LEDConfig.Arduino
         #endregion
         #region Instance Properties
         /// <summary>
-        /// LED color scheme
+        /// Device is connected
         /// </summary>
-        public ColorSchemes ColorScheme { get; private set; } = ColorSchemes.Unknown;
-        /// <summary>
-        /// Device is connected and serial port is open
-        /// </summary>
-        public bool Connected
-        {
-            get { return this.serialPort.IsOpen; }
-        }
-        public int Delay { get; private set; }
-        /// <summary>
-        /// LED pattern mode
-        /// </summary>
-        public PatternModes PatternMode { get; private set; } = PatternModes.Unknown;
+        public bool Connected => this.serialPort?.IsOpen ?? false;
         /// <summary>
         /// Device port name
         /// </summary>
         public string Port => this.serialPort.PortName;
         /// <summary>
-        /// Rainbow color incrementer
+        /// Firmware settings
         /// </summary>
-        public int RainbowIncrement { get; private set; }
-        public int Spacing { get; private set; }
+        public FirmwareSettings Settings { get; private set; } = new FirmwareSettings();
         #endregion
         #region Instance Methods
         /// <summary>
@@ -77,12 +64,7 @@ namespace AbaciLabs.LEDConfig.Arduino
             text = text.Substring(start_index, end_index - start_index);
             //
             FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
-            //
-            this.ColorScheme = command.ColorScheme;
-            this.PatternMode = command.PatternMode;
-            this.Delay = command.Delay;
-            this.RainbowIncrement = command.RainbowIncrement;
-            this.Spacing = command.Spacing;
+            this.Settings = command.Settings;
             return;
         }
         /// <summary>

@@ -56,57 +56,14 @@ namespace AbaciLabs.LEDConfig.UI.Models
                 this.OnPropertyChanged("LEDs");
             }
         }
-        private int _SelectedDelay = 10;
-        public int SelectedDelay
+        private FirmwareSettings _Settings = new FirmwareSettings();
+        public FirmwareSettings Settings
         {
-            get { return this._SelectedDelay; }
+            get { return this._Settings; }
             set
             {
-                this._SelectedDelay = value;
-                this.OnPropertyChanged("SelectedDelay");
-                return;
-            }
-        }
-        private ColorSchemes _SelectedColorScheme = ColorSchemes.Unknown;
-        public ColorSchemes SelectedColorScheme
-        {
-            get { return this._SelectedColorScheme; }
-            set
-            {
-                this._SelectedColorScheme = value;
-                this.OnPropertyChanged("SelectedColorScheme");
-            }
-        }
-        private PatternModes _SelectedPattern = PatternModes.Unknown;
-        public PatternModes SelectedPattern
-        {
-            get { return this._SelectedPattern; }
-            set
-            {
-                this._SelectedPattern = value;
-                this.OnPropertyChanged("SelectedPattern");
-            }
-        }
-        private int _SelectedRainbowIncrement = 1;
-        public int SelectedRainbowIncrement
-        {
-            get { return this._SelectedRainbowIncrement; }
-            set
-            {
-                this._SelectedRainbowIncrement = value;
-                this.OnPropertyChanged("SelectedRainbowIncrement");
-                return;
-            }
-        }
-        private int _SelectedSpacing = 5;
-        public int SelectedSpacing
-        {
-            get { return this._SelectedSpacing; }
-            set
-            {
-                this._SelectedSpacing = value;
-                this.OnPropertyChanged("SelectedSpacing");
-                return;
+                this._Settings = value;
+                this.OnPropertyChanged("Settings");
             }
         }
         #endregion
@@ -159,18 +116,14 @@ namespace AbaciLabs.LEDConfig.UI.Models
 
         private void UpdateSelectedValues()
         {
-            this.SelectedColorScheme = this.device?.ColorScheme ?? ColorSchemes.Unknown;
-            this.SelectedDelay = this.device?.Delay ?? 10;
-            this.SelectedPattern = this.device?.PatternMode ?? PatternModes.Unknown;
-            this.SelectedRainbowIncrement = this.device?.RainbowIncrement ?? 1;
-            this.SelectedSpacing = this.device?.Spacing ?? 5;
+            this.Settings = this.device?.Settings ?? new FirmwareSettings();
             return;
         }
         #endregion
         #region Instance Events
         private void workerCommitSettings_DoWork(object sender, DoWorkEventArgs e)
         {
-            FirmwareCommand command = new FirmwareCommand(this.SelectedPattern, this.SelectedColorScheme, this.SelectedDelay, this.SelectedRainbowIncrement, this.SelectedSpacing);
+            FirmwareCommand command = new FirmwareCommand(this.Settings);
             this.device.SendCommand(command);
             this.device.RetrieveSettings();
             return;
