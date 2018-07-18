@@ -18,6 +18,7 @@ enum ActionTypes
   Fill,
   Rain,
   Solid,
+  Rider,
   
   Discovery,
   ExportSettings
@@ -50,6 +51,7 @@ int currentStateIndex = 0;
 int currentSpacing = 4;
 // current delay value
 int currentDelay = 10;
+int originalDelay = 10;
 // Current serial input string
 String inputString = "";
 bool incrementingRainbow = true;
@@ -78,18 +80,17 @@ void loop()
   uint32_t color = GetColor(currentColorScheme, currentRainbowIndex);
   
   // determine current pattern
+  currentStateIncrement = 1;
+  currentDelay = originalDelay;
   switch(currentActionType)
   {
     case Chase:
-      currentStateIncrement = 1;
       LightChase(currentStateIndex, color, currentSpacing);
       break;
     case TheaterChase:
-      currentStateIncrement = 1;
       LightChaseTheater(currentStateIndex, color, currentSpacing);
       break;
     case Fill:
-      currentStateIncrement = 1;
       Light(currentStateIndex, color);
       break;
     case Rain:
@@ -97,15 +98,21 @@ void loop()
       Light(currentStateIndex, color);
       break;
     case Solid:
-      currentStateIncrement = 1;
       for(currentStateIndex=0; currentStateIndex<strip.numPixels(); currentStateIndex++)
       {
         Light(currentStateIndex, color);
       }
       break;
+    case Rider:
+      if(currentStateIndex >= strip.numPixels() - 1)
+        currentStateIncrement = -1;
+      else if(currentStateIndex <= 0)
+        currentStateIncrement = 1;
+      currentDelay = originalDelay * (abs(strip.numPixels()/2 - currentStateIndex) / 2); // slower towards edges
+      LightChase(currentStateIndex, color, currentSpacing);
+      break;
     default:
     case Unknown:
-      currentStateIncrement = 1;
       ClearStrip();
       break;
   }
@@ -372,7 +379,7 @@ void ParseCommand(String command)
     temp_str = command.substring(old_semicolon_index+1, semicolon_index);
     int delay_value = temp_str.toInt();
     if(delay_value != 0)
-       currentDelay = delay_value;
+       originalDelay = currentDelay = delay_value;
     Serial.println("> Delay Value: "+String(currentDelay));
     // parse rainbow increment
     old_semicolon_index = semicolon_index;
@@ -448,9 +455,9 @@ void ReadSettings()
   // read delay value
   value = EEPROM.read(ADR_DELAY);
   if(value == 255)
-    currentDelay = 10;
+    originalDelay = currentDelay = 10;
   else
-    currentDelay = value;
+    originalDelay = currentDelay = value;
   Serial.println("> Delay: "+String(currentDelay));
   // read rainbow increment
   value = EEPROM.read(ADR_RAINBOW_INCR);
@@ -528,6 +535,8 @@ String ActionTypeToString(ActionTypes action_type)
       return "Rain";
     case Solid:
       return "Solid";
+    case Rider:
+      return "Rider";
     default:
       return "Undefined!";
   }
@@ -547,6 +556,8 @@ String ActionTypeToCommandString(ActionTypes action_type)
       return "r";
     case Solid:
       return "s";
+    case Rider:
+      return "r";
     case Unknown:
     default:
       return "?";
@@ -616,6 +627,8 @@ ActionTypes CommandStringToActionType(String text)
       return Rain;
   if (text == "s")
       return Solid;
+  if (text == "r")
+      return Rider;
 
   // Serial Interface Actions
   if (text == "ID")

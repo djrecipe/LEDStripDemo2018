@@ -10,7 +10,8 @@
         TheaterChase = 2,
         Fill = 3,
         Rain = 4,
-        Solid = 5
+        Solid = 5,
+        Rider = 6
     }
     /// <summary>
     /// LED color schemes
