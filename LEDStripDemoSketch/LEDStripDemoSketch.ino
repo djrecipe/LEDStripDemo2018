@@ -44,8 +44,8 @@ LPD8806 strip = LPD8806(countLEDs);
 ActionTypes currentActionType = Unknown;
 // current color scheme
 ColorSchemes currentColorScheme = UnknownColor;
-uint32_t currentRainbowIncrement = 1;
-uint32_t currentRainbowIndex = 0;
+int currentRainbowIncrement = 1;
+int currentRainbowIndex = 0;
 int currentStateIncrement = 1;
 int currentStateIndex = 0;
 int currentSpacing = 4;
@@ -251,7 +251,6 @@ void IncrementRainbowIndex()
         currentRainbowIndex -= currentRainbowIncrement;
       break;
   }
-  currentRainbowIndex = max(min(currentRainbowIndex, WHEEL_SIZE), 0);
   return;
 }
 
