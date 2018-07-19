@@ -78,19 +78,22 @@ void loop()
 {
   // retrieve current color
   uint32_t color = GetColor(currentColorScheme, currentRainbowIndex);
+  int value;
   
   // determine current pattern
-  currentStateIncrement = 1;
   currentDelay = originalDelay;
   switch(currentActionType)
   {
     case Chase:
+      currentStateIncrement = 1;
       LightChase(currentStateIndex, color, currentSpacing);
       break;
     case TheaterChase:
+      currentStateIncrement = 1;
       LightChaseTheater(currentStateIndex, color, currentSpacing);
       break;
     case Fill:
+      currentStateIncrement = 1;
       Light(currentStateIndex, color);
       break;
     case Rain:
@@ -98,6 +101,7 @@ void loop()
       Light(currentStateIndex, color);
       break;
     case Solid:
+      currentStateIncrement = 1;
       for(currentStateIndex=0; currentStateIndex<strip.numPixels(); currentStateIndex++)
       {
         Light(currentStateIndex, color);
@@ -106,13 +110,15 @@ void loop()
     case Rider:
       if(currentStateIndex >= strip.numPixels() - 1)
         currentStateIncrement = -1;
-      else if(currentStateIndex <= 0)
+      else if(currentStateIndex <= currentSpacing - 1) // bounce off edge without wrapping around
         currentStateIncrement = 1;
-      currentDelay = originalDelay * (abs(strip.numPixels()/2 - currentStateIndex) / 2); // slower towards edges
+      value = ((int)strip.numPixels() +  (currentSpacing - 1))/2 - currentStateIndex; // determine distance from middle
+      currentDelay = originalDelay * max(abs(value) / 2, 1); // slower towards edges (multiply half of distance time delay)
       LightChase(currentStateIndex, color, currentSpacing);
       break;
     default:
     case Unknown:
+      currentStateIncrement = 1;
       ClearStrip();
       break;
   }
@@ -235,16 +241,17 @@ void IncrementRainbowIndex()
       break;
     default:
       // increment rainbow index
-      if(incrementingRainbow)
-        currentRainbowIndex += currentRainbowIncrement;
-      else
-        currentRainbowIndex -= currentRainbowIncrement;
       if(currentRainbowIndex >= WHEEL_SIZE)
         incrementingRainbow = false;
       else if(currentRainbowIndex <=0)
         incrementingRainbow = true;
+      if(incrementingRainbow)
+        currentRainbowIndex += currentRainbowIncrement;
+      else
+        currentRainbowIndex -= currentRainbowIncrement;
       break;
   }
+  currentRainbowIndex = max(min(currentRainbowIndex, WHEEL_SIZE), 0);
   return;
 }
 
@@ -492,7 +499,7 @@ void SendSettingsResponse()
   // .. add current color scheme
   text += ColorSchemeToCommandString(currentColorScheme) + ";";
   // .. add current delay value
-  text += String(currentDelay) + ";";
+  text += String(originalDelay) + ";";
   // .. add current color increment
   text += String(currentRainbowIncrement) + ";";
   // .. add current spacing value
@@ -508,7 +515,7 @@ void WriteSettings()
 {
   EEPROM.write(ADR_ACTION_TYPE, currentActionType);
   EEPROM.write(ADR_COLOR_SCHEME, currentColorScheme);
-  EEPROM.write(ADR_DELAY, currentDelay);
+  EEPROM.write(ADR_DELAY, originalDelay);
   EEPROM.write(ADR_RAINBOW_INCR, currentRainbowIncrement);
   EEPROM.write(ADR_SPACING, currentSpacing);
   return;
@@ -557,7 +564,7 @@ String ActionTypeToCommandString(ActionTypes action_type)
     case Solid:
       return "s";
     case Rider:
-      return "r";
+      return "j";
     case Unknown:
     default:
       return "?";
@@ -627,7 +634,7 @@ ActionTypes CommandStringToActionType(String text)
       return Rain;
   if (text == "s")
       return Solid;
-  if (text == "r")
+  if (text == "j")
       return Rider;
 
   // Serial Interface Actions
