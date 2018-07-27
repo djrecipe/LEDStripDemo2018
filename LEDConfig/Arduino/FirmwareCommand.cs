@@ -49,8 +49,12 @@ namespace AbaciLabs.LEDConfig.Arduino
             FirmwareCommand.ExportSettings = new FirmwareCommand("ES;");
             return;
         }
-
-        public static FirmwareCommand ParseCommandString(string text)
+        /// <summary>
+        /// Parse a string into a firmware command object
+        /// </summary>
+        /// <param name="text">Text to parse</param>
+        /// <returns>Firmware command</returns>
+        public static FirmwareCommand Parse(string text)
         {
             string[] words = text.Split(';');
             // pattern mode
@@ -80,6 +84,9 @@ namespace AbaciLabs.LEDConfig.Arduino
         private readonly string commandString = null;
         #endregion
         #region Instance Properties
+        /// <summary>
+        /// Settings to be received/transmitted by the firmware command
+        /// </summary>
         public FirmwareSettings Settings { get; private set; }
         #endregion
         #region Instance Methods

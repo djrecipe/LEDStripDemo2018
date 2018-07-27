@@ -63,7 +63,7 @@ namespace AbaciLabs.LEDConfig.Arduino
                 throw new IOException(string.Format("Failed to locate settings response suffix ('{0}')", text));
             text = text.Substring(start_index, end_index - start_index);
             //
-            FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
+            FirmwareCommand command = FirmwareCommand.Parse(text);
             this.Settings = command.Settings;
             return;
         }

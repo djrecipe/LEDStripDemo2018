@@ -12,7 +12,7 @@ namespace LEDConfig.Tests
         public void ParseValidCommandStringResponse()
         {
             string text = "c;sr;100;1;";
-            FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
+            FirmwareCommand command = FirmwareCommand.Parse(text);
             Assert.AreEqual(PatternModes.Chase, command.Settings.PatternMode, "Pattern mode mismatch");
             Assert.AreEqual(100, command.Settings.Delay, "Pattern mode mismatch");
             return;
@@ -22,7 +22,7 @@ namespace LEDConfig.Tests
         public void ParseInvalidPatterModeResponse()
         {
             string text = "invalid;sr;10;1;";
-            FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
+            FirmwareCommand command = FirmwareCommand.Parse(text);
             return;
         }
         [TestMethod]
@@ -30,7 +30,7 @@ namespace LEDConfig.Tests
         public void ParseInvalidDelayValueResponse()
         {
             string text = "t;sr;invalid;1;";
-            FirmwareCommand command = FirmwareCommand.ParseCommandString(text);
+            FirmwareCommand command = FirmwareCommand.Parse(text);
             return;
         }
     }
