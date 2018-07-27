@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace AbaciLabs.LEDConfig.Arduino
 {
@@ -9,28 +11,6 @@ namespace AbaciLabs.LEDConfig.Arduino
     public class FirmwareCommand
     {
         #region Static Members
-        private static readonly Dictionary<ColorSchemes, string> ColorSchemeStrings = new Dictionary<ColorSchemes, string>()
-        {
-            {ColorSchemes.PulsingRed, "pr"},
-            {ColorSchemes.PulsingGreen, "pg"},
-            {ColorSchemes.PulsingBlue, "pb"},
-            {ColorSchemes.Rainbow, "r"},
-            {ColorSchemes.Random, "x"},
-            {ColorSchemes.SimpleRed, "sr"},
-            {ColorSchemes.SimpleGreen, "sg"},
-            {ColorSchemes.SimpleBlue, "sb"},
-            {ColorSchemes.Unknown, "?"}
-        };
-        private static readonly Dictionary<PatternModes, string> PatternModeStrings = new Dictionary<PatternModes, string>()
-        {
-            {PatternModes.Unknown, "?"},
-            {PatternModes.Chase, "c"},
-            {PatternModes.TheaterChase, "h"},
-            {PatternModes.Fill, "f"},
-            {PatternModes.Rain, "r"},
-            {PatternModes.Solid, "s"},
-            {PatternModes.Rider, "j"}
-        };
         #endregion
         #region Static Properties
         /// <summary>
@@ -50,32 +30,24 @@ namespace AbaciLabs.LEDConfig.Arduino
             return;
         }
         /// <summary>
-        /// Parse a string into a firmware command object
+        /// Parse a base-64 string into a firmware command object
         /// </summary>
         /// <param name="text">Text to parse</param>
         /// <returns>Firmware command</returns>
         public static FirmwareCommand Parse(string text)
         {
-            string[] words = text.Split(';');
-            // pattern mode
-            PatternModes pattern_mode = PatternModeStrings.FirstOrDefault(pair => pair.Value == words[0]).Key;
-            // color scheme
-            ColorSchemes color_scheme = ColorSchemeStrings.FirstOrDefault(pair => pair.Value == words[1]).Key;
-            // delay value
-            int delay = int.Parse(words[2]);
-            // color increment
-            int color_increment = int.Parse(words[3]);
-            // spacing
-            int spacing = int.Parse(words[4]);
-            // create firmware command
-            FirmwareSettings settings = new FirmwareSettings()
-            {
-                ColorIncrement = color_increment,
-                ColorScheme = color_scheme,
-                Delay = delay,
-                PatternMode = pattern_mode,
-                PatternSpacing = spacing
-            };
+            // get bytes from base-64 string
+            byte[] bytes = Convert.FromBase64String(text);
+            // create struct pointer
+            FirmwareSettings settings = new FirmwareSettings();
+            int size = Marshal.SizeOf(settings);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            // copy bytes to pointer
+            Marshal.Copy(bytes, 0, ptr, size);
+            // convert pointer to struct
+            settings = (FirmwareSettings)Marshal.PtrToStructure(ptr, settings.GetType());
+            Marshal.FreeHGlobal(ptr);
+            // create firmware command base on settings struct
             FirmwareCommand command = new FirmwareCommand(settings);
             return command;
         }
@@ -108,9 +80,16 @@ namespace AbaciLabs.LEDConfig.Arduino
         }
         private string CreateCommandString(FirmwareSettings settings)
         {
-            string command = string.Format("{0};{1};{2};{3};{4};", PatternModeStrings[settings.PatternMode],
-                ColorSchemeStrings[settings.ColorScheme], settings.Delay, settings.ColorIncrement, settings.PatternSpacing);
-            return command;
+            // get structure pointer
+            int size = Marshal.SizeOf(settings);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(settings, ptr, true);
+            // get raw bytes of structure
+            byte[] bytes = new byte[size];
+            Marshal.Copy(ptr, bytes, 0, size);
+            Marshal.FreeHGlobal(ptr);
+            // return base-64 string
+            return Convert.ToBase64String(bytes);
         }
         #endregion
         #region Override Methods

@@ -1,39 +1,19 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AbaciLabs.LEDConfig.Arduino
 {
-    /// <summary>
-    /// Firmware settings for Arduino-based LED driver
-    /// </summary>
-    [DataContract(Namespace = "")]
-    public class FirmwareSettings
+    [StructLayout(LayoutKind.Explicit)]
+    public struct FirmwareSettings
     {
-        #region Instance Properties
-        /// <summary>
-        /// Color cycling increment value
-        /// </summary>
-        [DataMember]
-        public int ColorIncrement { get; set; } = 1;
-        /// <summary>
-        /// LED color scheme
-        /// </summary>
-        [DataMember]
-        public ColorSchemes ColorScheme { get; set; } = ColorSchemes.Unknown;
-        /// <summary>
-        /// Delay value for LED cycles
-        /// </summary>
-        [DataMember]
-        public int Delay { get; set; } = 10;
-        /// <summary>
-        /// LED pattern mode
-        /// </summary>
-        [DataMember]
-        public PatternModes PatternMode { get; set; } = PatternModes.Unknown;
-        /// <summary>
-        /// LED pattern spacing value
-        /// </summary>
-        [DataMember]
-        public int PatternSpacing { get; set; } = 4;
-        #endregion
+        [FieldOffset(0)] public int ColorIncrement;
+        [FieldOffset(4)] public ColorSchemes ColorScheme;
+        [FieldOffset(8)] public int PatternDelay;
+        [FieldOffset(12)] public PatternModes PatternMode;
+        [FieldOffset(16)] public int PatternSpacing;
     }
 }

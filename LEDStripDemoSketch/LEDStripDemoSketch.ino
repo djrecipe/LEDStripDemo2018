@@ -1,16 +1,14 @@
-#define ADR_ACTION_TYPE 0
-#define ADR_COLOR_SCHEME 2
-#define ADR_DELAY 4
-#define ADR_RAINBOW_INCR 8
-#define ADR_SPACING 10
-
 #define WHEEL_SIZE 384 // wheel sizes > 384 will cause gaps in the rainbow, while < 384 will cause truncated rainbow
 
+#define DISCOVERY_RESPONSE "BM2018"
+
 #include <EEPROM.h>
+
+#include "base64.hpp"
 #include "LPD8806.h"
 #include "SPI.h" // Comment out this line if using Trinket or Gemma
 
-enum ActionTypes
+enum PatternModes
 {
   Unknown,
   Chase,
@@ -19,9 +17,6 @@ enum ActionTypes
   Rain,
   Solid,
   Rider,
-  
-  Discovery,
-  ExportSettings
 };
 
 enum ColorSchemes
@@ -36,25 +31,33 @@ enum ColorSchemes
   RainbowColor,
   RandomColor
 };
+
+struct Settings
+{
+  int ColorIncrement;
+  ColorSchemes ColorScheme;
+  int PatternDelay;
+  PatternModes PatternMode;
+  int PatternSpacing;
+};
+
+struct State
+{
+  bool ColorIncrementing;
+  int ColorIndex;
+  int PatternDelayModified;
+  int StateIncrement;
+  int StateIndex;
+};
+
 // Number of RGB LEDs in strand
 int countLEDs = 32;
 // LED strip instance
 LPD8806 strip = LPD8806(countLEDs);
-// Current action type
-ActionTypes currentActionType = Unknown;
-// current color scheme
-ColorSchemes currentColorScheme = UnknownColor;
-int currentRainbowIncrement = 1;
-int currentRainbowIndex = 0;
-int currentStateIncrement = 1;
-int currentStateIndex = 0;
-int currentSpacing = 4;
-// current delay value
-int currentDelay = 10;
-int originalDelay = 10;
 // Current serial input string
 String inputString = "";
-bool incrementingRainbow = true;
+Settings currentSettings = Settings();
+State currentState = State();
 
 // Perform one-time start-up routines
 void setup()
@@ -66,7 +69,7 @@ void setup()
   while(!Serial){;}
   Serial.println("> Initializing Device...");
   // read settings from NVS
-  ReadSettings();
+  currentSettings = ReadEEPROM();
   // initialize strip
   strip.begin();
   ClearStrip();
@@ -77,60 +80,65 @@ void setup()
 void loop()
 {
   // retrieve current color
-  uint32_t color = GetColor(currentColorScheme, currentRainbowIndex);
+  uint32_t color = GetColor(currentSettings.ColorScheme, currentState.ColorIndex);
   int value;
   
   // determine current pattern
-  currentDelay = originalDelay;
-  switch(currentActionType)
+  switch(currentSettings.PatternMode)
   {
     case Chase:
-      currentStateIncrement = 1;
-      LightChase(currentStateIndex, color, currentSpacing);
+      currentState.PatternDelayModified = currentSettings.PatternDelay;
+      currentState.StateIncrement = 1;
+      LightChase(currentState.StateIndex, color, currentSettings.PatternSpacing);
       break;
     case TheaterChase:
-      currentStateIncrement = 1;
-      LightChaseTheater(currentStateIndex, color, currentSpacing);
+      currentState.PatternDelayModified = currentSettings.PatternDelay;
+      currentState.StateIncrement = 1;
+      LightChaseTheater(currentState.StateIndex, color, currentSettings.PatternSpacing);
       break;
     case Fill:
-      currentStateIncrement = 1;
-      Light(currentStateIndex, color);
+      currentState.PatternDelayModified = currentSettings.PatternDelay;
+      currentState.StateIncrement = 1;
+      Light(currentState.StateIndex, color);
       break;
     case Rain:
-      currentStateIncrement = random(-1 * currentSpacing,currentSpacing + 1);
-      Light(currentStateIndex, color);
+      currentState.PatternDelayModified = currentSettings.PatternDelay;
+      currentState.StateIncrement = random(-1 * currentSettings.PatternSpacing,currentSettings.PatternSpacing + 1);
+      Light(currentState.StateIndex, color);
       break;
     case Solid:
-      currentStateIncrement = 1;
-      for(currentStateIndex=0; currentStateIndex<strip.numPixels(); currentStateIndex++)
+      currentState.PatternDelayModified = currentSettings.PatternDelay;
+      currentState.StateIncrement = 1;
+      for(currentState.StateIndex=0; currentState.StateIndex<strip.numPixels(); currentState.StateIndex++)
       {
-        Light(currentStateIndex, color);
+        Light(currentState.StateIndex, color);
       }
       break;
     case Rider:
-      if(currentStateIndex >= strip.numPixels() - 1)
-        currentStateIncrement = -1;
-      else if(currentStateIndex <= currentSpacing - 1) // bounce off edge without wrapping around
-        currentStateIncrement = 1;
-      value = ((int)strip.numPixels() +  (currentSpacing - 1))/2 - currentStateIndex; // determine distance from middle
-      currentDelay = originalDelay * max(abs(value) / 2, 1); // slower towards edges (multiply half of distance time delay)
-      LightChase(currentStateIndex, color, currentSpacing);
+      if(currentState.StateIndex >= strip.numPixels() - 1)
+        currentState.StateIncrement = -1;
+      else if(currentState.StateIndex <= currentSettings.PatternSpacing - 1) // bounce off edge without wrapping around
+        currentState.StateIncrement = 1;
+      value = ((int)strip.numPixels() +  (currentSettings.PatternSpacing - 1))/2 - currentState.StateIndex; // determine distance from middle
+      currentState.PatternDelayModified = currentSettings.PatternDelay * max(abs(value) / 2, 1); // slower towards edges (multiply half of distance time delay)
+      LightChase(currentState.StateIndex, color, currentSettings.PatternSpacing);
       break;
     default:
     case Unknown:
-      currentStateIncrement = 1;
+      currentState.PatternDelayModified = currentSettings.PatternDelay;
+      currentState.StateIncrement = 1;
       ClearStrip();
       break;
   }
   
   // increment state index
-  currentStateIndex = (currentStateIndex + currentStateIncrement)%strip.numPixels();
-  IncrementRainbowIndex();
+  currentState.StateIndex = (currentState.StateIndex + currentState.StateIncrement)%strip.numPixels();
+  IncrementColorIndex();
   // read serial bus
   ReadSerial();
 
   // wait for delay
-  delay(currentDelay);
+  delay(currentSettings.PatternDelay);
 }
 
 /// <summary>
@@ -138,6 +146,7 @@ void loop()
 /// </summary>
 void ClearStrip()
 {
+  currentState = State();
   for(int i=0; i<strip.numPixels(); i++)
   {
     // light pixel
@@ -230,25 +239,33 @@ uint32_t GetWheelColor(uint16_t position)
   return(strip.Color(r,g,b));
 }
 
-void IncrementRainbowIndex()
+/// <summary>
+/// Advance the current color index according to the current settings
+/// </summary>
+void IncrementColorIndex()
 {
-  switch(currentColorScheme)
+  switch(currentSettings.ColorScheme)
   {
+    // rainbow color goes in complete wheel/circle, so reset index to zero
+    //   in order to complete the rainbow "wheel"
     case RainbowColor:
-      currentRainbowIndex += currentRainbowIncrement;
-      if(currentRainbowIndex >= WHEEL_SIZE)
-        currentRainbowIndex = 0;
+      currentState.ColorIndex += currentSettings.ColorIncrement;
+      if(currentState.ColorIndex >= WHEEL_SIZE)
+        currentState.ColorIndex = 0;
       break;
+    // default behavior is to "bounce" back and forth between two extremes
+    //   of the color cycle
     default:
-      // increment rainbow index
-      if(currentRainbowIndex >= WHEEL_SIZE)
-        incrementingRainbow = false;
-      else if(currentRainbowIndex <=0)
-        incrementingRainbow = true;
-      if(incrementingRainbow)
-        currentRainbowIndex += currentRainbowIncrement;
+      // determine color index direction
+      if(currentState.ColorIndex >= WHEEL_SIZE)
+        currentState.ColorIncrementing = false;
+      else if(currentState.ColorIndex <=0)
+        currentState.ColorIncrementing = true;
+      // increment or decrement color index
+      if(currentState.ColorIncrementing)
+        currentState.ColorIndex += currentSettings.ColorIncrement;
       else
-        currentRainbowIndex -= currentRainbowIncrement;
+        currentState.ColorIndex -= currentSettings.ColorIncrement;
       break;
   }
   return;
@@ -323,358 +340,113 @@ void Light(uint8_t index, uint32_t color)
 }
 
 /// <summary>
-/// Parse the specified string as a firmware command
+/// Parse the specified base64 string as a firmware command
 /// </summary>
-/// <param name=command>Command string to parse</param>
-void ParseCommand(String command)
+/// <param name=command>Base64 string to parse</param>
+Settings ParseSettings(String command)
 {
-  String temp_str = "";
-  Serial.println("> Reading Command... ");
-  // determine input string length
-  int str_length = command.length();
-  // parse action type
-  if(str_length < 1)
-    return;
-  int semicolon_index = command.indexOf(';', 0);
-  int old_semicolon_index = 0;
-  if (semicolon_index < 1)
-  {
-    Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Action Type");
-    return;
-  }
-  temp_str = command.substring(old_semicolon_index, semicolon_index);
-  ActionTypes action_type = CommandStringToActionType(temp_str);
-  Serial.println("> Action Type: "+ActionTypeToString(action_type));
-  if(IsSerialActionType(action_type))
-  {
-    // Serial Action Type
-    switch(action_type)
-    {
-      case Discovery:
-        SendDiscoveryResponse();
-        break;
-      case ExportSettings:
-        SendSettingsResponse();
-        break;
-    }
-  }
-  else
-  {
-    // LED Action Type
-    currentActionType = action_type;
-    // parse color scheme
-    old_semicolon_index = semicolon_index;
-    semicolon_index = command.indexOf(';', old_semicolon_index+1);
-    if (semicolon_index < 1)
-    {
-      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Color Scheme");
-      return;
-    }
-    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
-    ColorSchemes color_scheme = CommandStringToColorScheme(temp_str);
-    Serial.println("> Color Scheme: "+ColorSchemeToString(color_scheme));
-    currentColorScheme = color_scheme;
-    // parse delay
-    old_semicolon_index = semicolon_index;
-    semicolon_index = command.indexOf(';', old_semicolon_index+1);
-    if (semicolon_index < 1)
-    {
-      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Delay Value");
-      return;
-    }
-    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
-    int delay_value = temp_str.toInt();
-    if(delay_value != 0)
-       originalDelay = currentDelay = delay_value;
-    Serial.println("> Delay Value: "+String(currentDelay));
-    // parse rainbow increment
-    old_semicolon_index = semicolon_index;
-    semicolon_index = command.indexOf(';', old_semicolon_index+1);
-    if (semicolon_index < 1)
-    {
-      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Color Increment");
-      return;
-    }
-    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
-    int rainbow_increment = temp_str.toInt();
-    if(rainbow_increment != 0)
-       currentRainbowIncrement = rainbow_increment;
-    Serial.println("> Color Increment: "+String(currentRainbowIncrement));
-    // parse spacing value
-    old_semicolon_index = semicolon_index;
-    semicolon_index = command.indexOf(';', old_semicolon_index+1);
-    if (semicolon_index < 1)
-    {
-      Serial.println("! Command Warning: Semicolon Not Found, Cannot Parse Spacing");
-      return;
-    }
-    temp_str = command.substring(old_semicolon_index+1, semicolon_index);
-    int spacing = temp_str.toInt();
-    if(spacing != 0)
-       currentSpacing = spacing;
-    Serial.println("> Spacing: "+String(currentSpacing));
-  }
-  return;
+  // create new settings object
+  Settings settings = Settings();
+  // decode base64 string into bytes
+  unsigned int needed_length = sizeof(settings);
+  unsigned char bytes[needed_length];
+  decode_base64(command.c_str(), bytes);
+  // copy raw bytes into settings object
+  memcpy(&settings, bytes, sizeof(settings));
+  return settings;
 }
 
+/// <summary>
+/// Read settings from EEPROM
+/// </summary>
+/// <returns> Settings retrieved from EEPROM </returns>
+Settings ReadEEPROM()
+{
+  // create new settings object
+  Settings settings = Settings();
+  // aggregate EEPROM bytes into settings object
+  for (unsigned int i=0; i<sizeof(settings); i++)
+  {
+    *((char*)&settings + i) = EEPROM.read(0 + i);
+  }
+  return settings;
+}
+
+/// <summary>
+/// Read all available serial input
+/// </summary>
+/// <remarks> Sets a flag whenever a newline character is found </remarks>
 void ReadSerial()
 {
   while (Serial.available())
   {
     // get the new byte:
     char input_char = (char)Serial.read();
-    // add it to the inputString:
-    inputString += input_char;
-    // if the incoming character is a newline, set a flag so the main loop can
-    // do something about it:
+    // check for newline
     if (input_char == '\n')
     {
       // parse command and update settings
-      ParseCommand(inputString);
-      WriteSettings();
-      ClearStrip();
-      currentStateIndex = 0;
+      if(inputString == "ID;")
+      {
+        SendDiscoveryResponse();
+      }
+      else if(inputString == "ES;")
+      {
+        SendSettingsResponse(currentSettings);
+      }
+      else
+      {        
+        currentSettings = ParseSettings(inputString);
+        WriteEEPROM(currentSettings);
+        ClearStrip();
+      }
       inputString = "";
+      Serial.flush();
       break;
     }
+    // add it to the inputString:
+    inputString += input_char;
   }
   return;
 }
 
-void ReadSettings()
-{
-  Serial.println("> Reading Settings...");
-  // read action type
-  int value = EEPROM.read(ADR_ACTION_TYPE);
-  if(value == 255)
-    currentActionType = Unknown;
-  else
-    currentActionType = value;
-  Serial.println("> Action Type: "+ActionTypeToString(currentActionType));
-  // read color scheme
-  value = EEPROM.read(ADR_COLOR_SCHEME);
-  if(value == 255)
-    currentColorScheme = UnknownColor;
-  else
-    currentColorScheme = value;
-  Serial.println("> Color Scheme: "+ColorSchemeToString(currentColorScheme));
-  // read delay value
-  value = EEPROM.read(ADR_DELAY);
-  if(value == 255)
-    originalDelay = currentDelay = 10;
-  else
-    originalDelay = currentDelay = value;
-  Serial.println("> Delay: "+String(currentDelay));
-  // read rainbow increment
-  value = EEPROM.read(ADR_RAINBOW_INCR);
-  if(value == 255)
-    currentRainbowIncrement = 1;
-  else
-    currentRainbowIncrement = value;
-  Serial.println("> Color Increment: "+String(currentRainbowIncrement));
-  // read spacing
-  value = EEPROM.read(ADR_SPACING);
-  if(value == 255)
-    currentSpacing = 5;
-  else
-    currentSpacing = value;
-  Serial.println("> Spacing: "+String(currentSpacing));
-  return;
-}
 
+/// <summary>
+/// Respond to a device discovery ping via serial communication
+/// </summary>
 void SendDiscoveryResponse()
 {
-  Serial.println("BM2018");
+  Serial.println(DISCOVERY_RESPONSE);
   return;
 }
 
-void SendSettingsResponse()
+/// <summary>
+/// Send specified settings via serial communication
+/// </summary>
+/// <param name=settings>Settings to send via serial</param>
+void SendSettingsResponse(Settings settings)
 {
-  // construct settings string
-  // .. add prefix
-  String text = ":ES:";
-  // .. add current action type
-  text += ActionTypeToCommandString(currentActionType) + ";";
-  // .. add current color scheme
-  text += ColorSchemeToCommandString(currentColorScheme) + ";";
-  // .. add current delay value
-  text += String(originalDelay) + ";";
-  // .. add current color increment
-  text += String(currentRainbowIncrement) + ";";
-  // .. add current spacing value
-  text += String(currentSpacing) + ";";
-  // .. add suffix
-  text += ":ES:";
-  // send string
-  Serial.println(text);
+  // retrieve raw bytes of settings object
+  unsigned int original_length = sizeof(settings);
+  unsigned char bytes[original_length];
+  memcpy(bytes, &settings, original_length);
+  // encode raw bytes as base-64 string
+  unsigned int needed_length = encode_base64_length(original_length);
+  char base64[needed_length];
+  encode_base64(bytes, original_length, base64);
+  // send base-64 string
+  Serial.println(base64);
   return;
 }
 
-void WriteSettings()
+/// <summary>
+/// Write specified settings to device EEPROM
+/// </summary>
+/// <param name=settings>Settings to write to EEPROM</param>
+void WriteEEPROM(Settings settings)
 {
-  EEPROM.write(ADR_ACTION_TYPE, currentActionType);
-  EEPROM.write(ADR_COLOR_SCHEME, currentColorScheme);
-  EEPROM.write(ADR_DELAY, originalDelay);
-  EEPROM.write(ADR_RAINBOW_INCR, currentRainbowIncrement);
-  EEPROM.write(ADR_SPACING, currentSpacing);
+  EEPROM.put(0, settings);
   return;
-}
-
-String ActionTypeToString(ActionTypes action_type)
-{
-  switch(action_type)
-  {
-    case Discovery:
-      return "Discovery";
-    case ExportSettings:
-      return "Export Settings";
-      
-    case Unknown:
-      return "Unknown";
-    case Chase:
-      return "Chase";
-    case TheaterChase:
-      return "Theater Chase";
-    case Fill:
-      return "Fill";
-    case Rain:
-      return "Rain";
-    case Solid:
-      return "Solid";
-    case Rider:
-      return "Rider";
-    default:
-      return "Undefined!";
-  }
-}
-
-String ActionTypeToCommandString(ActionTypes action_type)
-{
-  switch(action_type)
-  {
-    case Chase:
-      return "c";
-    case TheaterChase:
-      return "h";
-    case Fill:
-      return "f";
-    case Rain:
-      return "r";
-    case Solid:
-      return "s";
-    case Rider:
-      return "j";
-    case Unknown:
-    default:
-      return "?";
-  }
-}
-
-String ColorSchemeToCommandString(ColorSchemes scheme)
-{
-  switch(scheme)
-  {
-    case PulsingRedColor:
-      return "pr";
-    case PulsingGreenColor:
-      return "pg";
-    case PulsingBlueColor:
-      return "pb";
-    case RainbowColor:
-      return "r";
-    case RandomColor:
-      return "x";
-    case SimpleRedColor:
-      return "sr";
-    case SimpleGreenColor:
-      return "sg";
-    case SimpleBlueColor:
-      return "sb";
-    default:
-      return "?";
-  }
-}
-
-String ColorSchemeToString(ColorSchemes scheme)
-{
-  switch(scheme)
-  {
-    case PulsingRedColor:
-      return "Pulsing Red";
-    case PulsingGreenColor:
-      return "Pulsing Green";
-    case PulsingBlueColor:
-      return "Pulsing Blue";
-    case RainbowColor:
-      return "Rainbow";
-    case RandomColor:
-      return "Randomn";
-    case SimpleRedColor:
-      return "Simple Red";
-    case SimpleGreenColor:
-      return "Simple Green";
-    case SimpleBlueColor:
-      return "Simple Blue";
-    default:
-      return "Undefined!";
-  }
-}
-
-ActionTypes CommandStringToActionType(String text)
-{
-  // LED Actions
-  if (text == "c")
-      return Chase;
-  if (text == "h")
-      return TheaterChase;
-  if (text == "f")
-      return Fill;
-  if (text == "r")
-      return Rain;
-  if (text == "s")
-      return Solid;
-  if (text == "j")
-      return Rider;
-
-  // Serial Interface Actions
-  if (text == "ID")
-      return Discovery;
-  if (text == "ES")
-      return ExportSettings;
-  return Unknown;
-}
-
-ColorSchemes CommandStringToColorScheme(String text)
-{
-  if (text == "pr")
-    return PulsingRedColor;
-  if (text == "pg")
-    return PulsingGreenColor;
-  if (text == "pb")
-    return PulsingBlueColor;
-  if (text == "r")
-    return RainbowColor;
-  if (text == "x")
-    return RandomColor;
-  if (text == "sr")
-    return SimpleRedColor;
-  if (text == "sg")
-    return SimpleGreenColor;
-  if (text == "sb")
-    return SimpleBlueColor;
-  return UnknownColor;
-}
-
-bool IsSerialActionType(ActionTypes action_type)
-{
-  switch(action_type)
-  {
-    case ExportSettings:
-    case Discovery:
-      return true;
-    default:
-      return false;
-  }
 }
 
 void serialEvent()
