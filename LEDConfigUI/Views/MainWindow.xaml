@@ -23,6 +23,18 @@
     </Window.Resources>
 
     <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Busy}" Value="True">
+                        <Setter Property="IsEnabled" Value="False"></Setter>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Busy}" Value="False">
+                        <Setter Property="IsEnabled" Value="True"></Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -60,42 +72,16 @@
 
                     <Label x:Name="lblSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4">Spacing</Label>
                     <TextBox x:Name="txtSpacing" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="4" Text="{Binding Settings.PatternSpacing}"/>
-                    
+
                     <Button x:Name="btnCommitSettings" Margin="20,20,20,20" Grid.Column="2" Grid.Row="5" Width="120" Height="30"
-                            VerticalAlignment="Bottom" HorizontalAlignment="Right" Content="Commit" Click="btnCommitSettings_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Busy}" Value="True">
-                                        <Setter Property="IsEnabled" Value="False"></Setter>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Busy}" Value="False">
-                                        <Setter Property="IsEnabled" Value="True"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                            VerticalAlignment="Bottom" HorizontalAlignment="Right" Content="Commit" Click="btnCommitSettings_Click"/>
 
                 </Grid>
             </TabItem>
         </TabControl>
         <StatusBar Grid.Row="1"  HorizontalAlignment="Stretch" Height="Auto" VerticalAlignment="Stretch" FlowDirection="RightToLeft">
             <StatusBarItem x:Name="lblConnectionStatus" Content="{Binding ConnectionStatusText}" Height="Auto" Margin="10,5,10,5" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-            <Button x:Name="btnDiscover" HorizontalAlignment="Right" Padding="5,5,5,5" Margin="10,5,10,5" Content="Discover" Click="btnDiscover_Click">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Busy}" Value="True">
-                                <Setter Property="IsEnabled" Value="False"></Setter>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Busy}" Value="False">
-                                <Setter Property="IsEnabled" Value="True"></Setter>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
+            <Button x:Name="btnDiscover" HorizontalAlignment="Right" Padding="5,5,5,5" Margin="10,5,10,5" Content="Discover" Click="btnDiscover_Click"/>
         </StatusBar>
 
     </Grid>
