@@ -39,14 +39,7 @@ namespace AbaciLabs.LEDConfig.Arduino
             // get bytes from base-64 string
             byte[] bytes = Convert.FromBase64String(text);
             // create struct pointer
-            FirmwareSettings settings = new FirmwareSettings();
-            int size = Marshal.SizeOf(settings);
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            // copy bytes to pointer
-            Marshal.Copy(bytes, 0, ptr, size);
-            // convert pointer to struct
-            settings = (FirmwareSettings)Marshal.PtrToStructure(ptr, settings.GetType());
-            Marshal.FreeHGlobal(ptr);
+            FirmwareSettings settings = bytes;
             // create firmware command base on settings struct
             FirmwareCommand command = new FirmwareCommand(settings);
             return command;
@@ -80,16 +73,8 @@ namespace AbaciLabs.LEDConfig.Arduino
         }
         private string CreateCommandString(FirmwareSettings settings)
         {
-            // get structure pointer
-            int size = Marshal.SizeOf(settings);
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(settings, ptr, true);
-            // get raw bytes of structure
-            byte[] bytes = new byte[size];
-            Marshal.Copy(ptr, bytes, 0, size);
-            Marshal.FreeHGlobal(ptr);
             // return base-64 string
-            return Convert.ToBase64String(bytes);
+            return Convert.ToBase64String(settings);
         }
         #endregion
         #region Override Methods

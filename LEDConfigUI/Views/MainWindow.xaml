@@ -53,7 +53,7 @@
                               ItemsSource="{Binding Source={StaticResource ColorSchemesData}}" SelectedItem="{Binding Settings.ColorScheme}"/>
 
                     <Label x:Name="lblDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2">Delay</Label>
-                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" Text="{Binding Settings.Delay}"/>
+                    <TextBox x:Name="txtDelay" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="2" Text="{Binding Settings.PatternDelay}"/>
 
                     <Label x:Name="lblColorIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3">Color Increment</Label>
                     <TextBox x:Name="txtColorIncrement" Margin="20,20,20,0" VerticalAlignment="Center" Grid.Column="1" Grid.Row="3" Text="{Binding Settings.ColorIncrement}"/>
