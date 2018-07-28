@@ -70,6 +70,7 @@ void setup()
   Serial.println("> Initializing Device...");
   // read settings from NVS
   currentSettings = ReadEEPROM();
+  ValidateCurrentSettings();
   // initialize strip
   strip.begin();
   ClearStrip();
@@ -397,6 +398,7 @@ void ReadSerial()
       else
       {        
         currentSettings = ParseSettings(inputString);
+        ValidateCurrentSettings();
         WriteEEPROM(currentSettings);
         ClearStrip();
       }
@@ -436,6 +438,13 @@ void SendSettingsResponse(Settings settings)
   encode_base64(bytes, original_length, base64);
   // send base-64 string
   Serial.println(base64);
+  return;
+}
+
+void ValidateCurrentSettings()
+{
+  if(currentSettings.PatternDelay < 10)
+    currentSettings.PatternDelay = 10;
   return;
 }
 
