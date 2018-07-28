@@ -50,18 +50,9 @@ namespace AbaciLabs.LEDConfig.Arduino
             //
             this.SendCommand(FirmwareCommand.ExportSettings);
             //
-            string text = this.serialPort.ReadExisting();
+            string text = this.serialPort.ReadExisting().Trim();
             if(string.IsNullOrWhiteSpace(text))
                 throw new IOException("Failed to retrieve settings response from Arduino device");
-            //
-            int start_index = text.IndexOf(":ES:");
-            if(start_index < 0)
-                throw new IOException(string.Format("Failed to locate settings response prefix ('{0}')", text));
-            start_index += 4;
-            int end_index = text.IndexOf(":ES:", start_index);
-            if(end_index < 0)
-                throw new IOException(string.Format("Failed to locate settings response suffix ('{0}')", text));
-            text = text.Substring(start_index, end_index - start_index);
             //
             FirmwareCommand command = FirmwareCommand.Parse(text);
             this.Settings = command.Settings;

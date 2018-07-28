@@ -10,10 +10,13 @@ namespace AbaciLabs.LEDConfig.Arduino
     [StructLayout(LayoutKind.Explicit)]
     public struct FirmwareSettings
     {
-        [FieldOffset(0)] public int ColorIncrement;
-        [FieldOffset(4)] public ColorSchemes ColorScheme;
-        [FieldOffset(8)] public int PatternDelay;
-        [FieldOffset(12)] public PatternModes PatternMode;
-        [FieldOffset(16)] public int PatternSpacing;
+        [FieldOffset(0)] public short ColorIncrement;
+        [FieldOffset(2)] public ColorSchemes ColorScheme;
+        [FieldOffset(4)] public short PatternDelay;
+        [FieldOffset(6)] public PatternModes PatternMode;
+        [FieldOffset(8)] public short PatternSpacing;
     }
 }
+
+
+//TODO : retrieve FirmwareSettingsClass back from GitHub and use it, but convert to/from this struct

@@ -3,7 +3,7 @@
     /// <summary>
     /// LED pattern modes
     /// </summary>
-    public enum PatternModes : int
+    public enum PatternModes : short
     {
         Unknown = 0,
         Chase = 1,
@@ -16,7 +16,7 @@
     /// <summary>
     /// LED color schemes
     /// </summary>
-    public enum ColorSchemes : int
+    public enum ColorSchemes : short
     {
         Unknown = 0,
         SimpleGreen = 1,

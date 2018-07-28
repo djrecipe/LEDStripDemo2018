@@ -67,10 +67,10 @@ void setup()
   // initialize serial
   Serial.begin(9600);
   while(!Serial){;}
-  Serial.println("> Initializing Device...");
   // read settings from NVS
   currentSettings = ReadEEPROM();
   ValidateCurrentSettings();
+  PrintSettings(currentSettings);
   // initialize strip
   strip.begin();
   ClearStrip();
@@ -139,7 +139,7 @@ void loop()
   ReadSerial();
 
   // wait for delay
-  delay(currentSettings.PatternDelay);
+  delay(currentState.PatternDelayModified);
 }
 
 /// <summary>
@@ -357,12 +357,21 @@ Settings ParseSettings(String command)
   return settings;
 }
 
+void PrintSettings(Settings settings)
+{
+  Serial.println("Pattern Mode: " + String(settings.PatternMode));
+  Serial.println("Pattern delay: " + String(settings.PatternDelay));
+  Serial.println("Color Scheme: " + String(settings.ColorScheme));
+  return;
+}
+
 /// <summary>
 /// Read settings from EEPROM
 /// </summary>
 /// <returns> Settings retrieved from EEPROM </returns>
 Settings ReadEEPROM()
 {
+  Serial.println("> Reading EEPROM...");
   // create new settings object
   Settings settings = Settings();
   // aggregate EEPROM bytes into settings object
@@ -438,6 +447,9 @@ void SendSettingsResponse(Settings settings)
   encode_base64(bytes, original_length, base64);
   // send base-64 string
   Serial.println(base64);
+  Settings validate = ParseSettings(base64);
+  if(settings.PatternDelay != validate.PatternDelay)
+    Serial.println("Settings serialization error");
   return;
 }
 

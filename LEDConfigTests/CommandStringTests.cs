@@ -19,11 +19,11 @@ namespace LEDConfig.Tests
         public void CreateAndParse()
         {
             // declare expected values
-            int expected_color_increment = 10;
+            short expected_color_increment = 10;
             ColorSchemes expected_color_scheme = ColorSchemes.Rainbow;
-            int expected_pattern_delay = 150;
+            short expected_pattern_delay = 20;
             PatternModes expected_pattern_mode = PatternModes.Rider;
-            int expected_pattern_spacing = 4;
+            short expected_pattern_spacing = 4;
             // create settings struct
             FirmwareSettings settings = new FirmwareSettings
             {
