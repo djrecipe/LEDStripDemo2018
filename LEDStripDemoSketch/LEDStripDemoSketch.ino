@@ -58,6 +58,7 @@ LPD8806 strip = LPD8806(countLEDs);
 String inputString = "";
 Settings currentSettings = Settings();
 State currentState = State();
+bool toggleValue = false;
 
 // Perform one-time start-up routines
 void setup()
@@ -82,7 +83,8 @@ void loop()
 {
   // retrieve current color
   uint32_t color = GetColor(currentSettings.ColorScheme, currentState.ColorIndex);
-  int value;
+  // various values for miscellaneous things
+  int value = 0;
   
   // determine current pattern
   switch(currentSettings.PatternMode)
@@ -98,9 +100,13 @@ void loop()
       LightChaseTheater(currentState.StateIndex, color, currentSettings.PatternSpacing);
       break;
     case Fill:
+      if(toggleValue)
+        color = strip.Color(0,0,0);
       currentState.PatternDelayModified = currentSettings.PatternDelay;
       currentState.StateIncrement = 1;
       Light(currentState.StateIndex, color);
+      if(currentState.StateIndex >= strip.numPixels() - currentState.StateIncrement)
+        toggleValue = !toggleValue;
       break;
     case Rain:
       currentState.PatternDelayModified = currentSettings.PatternDelay;
