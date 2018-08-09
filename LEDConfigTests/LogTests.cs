@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using AbaciLabs.LEDConfig;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace LEDConfig.Tests
+namespace AbaciLabs.LEDConfig.Tests
 {
     [TestClass]
     public class LogTests

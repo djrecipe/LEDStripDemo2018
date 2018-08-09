@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using AbaciLabs.LEDConfig.Arduino;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace LEDConfig.Tests
+namespace AbaciLabs.LEDConfig.Tests
 {
     /// <summary>
     /// Hardware connection tests

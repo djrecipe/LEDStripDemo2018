@@ -7,8 +7,8 @@
     <ProjectGuid>{39DC5348-B7EA-4F31-8431-34D0A9D0B191}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LEDConfig.Tests</RootNamespace>
-    <AssemblyName>LEDConfig.Tests</AssemblyName>
+    <RootNamespace>AbaciLabs.LEDConfig.Tests</RootNamespace>
+    <AssemblyName>AbaciLabs.LEDConfig.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

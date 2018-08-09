@@ -2,12 +2,12 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("LEDConfigTests")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("AbaciLabs.LEDConfig.Tests")]
+[assembly: AssemblyDescription("Unit tests for LEDStripDemo2018")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("LEDConfigTests")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCompany("Abaci Labs")]
+[assembly: AssemblyProduct("LEDStripDemo2018")]
+[assembly: AssemblyCopyright("Copyright Abaci Labs © 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

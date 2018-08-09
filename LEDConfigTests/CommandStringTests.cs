@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using AbaciLabs.LEDConfig.Arduino;
+﻿using AbaciLabs.LEDConfig.Arduino;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace LEDConfig.Tests
+namespace AbaciLabs.LEDConfig.Tests
 {
     /// <summary>
     /// Test command strings
