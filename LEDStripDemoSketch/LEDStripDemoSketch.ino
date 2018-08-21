@@ -63,6 +63,7 @@ bool toggleValue = false;
 // Perform one-time start-up routines
 void setup()
 {
+  pinMode(12, INPUT);
   // random seed
   randomSeed(analogRead(0));
   // initialize serial
