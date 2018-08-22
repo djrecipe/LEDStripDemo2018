@@ -104,8 +104,11 @@ void loop()
       if(toggleValue)
         color = strip.Color(0,0,0);
       currentState.PatternDelayModified = currentSettings.PatternDelay;
-      currentState.StateIncrement = 1;
-      Light(currentState.StateIndex, color);
+      currentState.StateIncrement = currentSettings.PatternSpacing;
+      for(int i=currentState.StateIndex; i<currentState.StateIndex + currentSettings.PatternSpacing && i < strip.numPixels(); i++)
+      {
+        Light(i, color);
+      }
       if(currentState.StateIndex >= strip.numPixels() - currentState.StateIncrement)
         toggleValue = !toggleValue;
       break;
